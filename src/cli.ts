@@ -3,7 +3,6 @@ import yParser from "yargs-parser";
 import fs from "fs";
 
 const argv = yParser(process.argv.slice(2));
-
 const command = argv._[0];
 
 const commandPath = path.join(__dirname, "commands", `${command}.ts`);
