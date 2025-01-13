@@ -1,0 +1,21 @@
+{
+  "name": "@umijs/tools",
+  "version": "0.0.0-alpha.1",
+  "scripts": {
+    "release": "./bin/utools.js release"
+  },
+  "authors": [
+    "chencheng <sorrycc@gmail.com> (https://github.com/sorrycc)"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@types/yargs-parser": "^21.0.3",
+    "git-repo-info": "^2.1.1",
+    "tsx": "^4.19.2",
+    "yargs-parser": "^21.1.1",
+    "zx": "^8.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5"
+  }
+}
