@@ -7,6 +7,9 @@
   "authors": [
     "chencheng <sorrycc@gmail.com> (https://github.com/sorrycc)"
   ],
+  "bin": {
+    "utools": "./bin/utools.js"
+  },
   "license": "MIT",
   "dependencies": {
     "@types/yargs-parser": "^21.0.3",
