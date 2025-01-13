@@ -2,7 +2,7 @@
   "name": "@umijs/tools",
   "version": "0.1.1",
   "scripts": {
-    "release": "./bin/utools.js release"
+    "release": "./bin/utools.js release --git-tag"
   },
   "authors": [
     "chencheng <sorrycc@gmail.com> (https://github.com/sorrycc)"
