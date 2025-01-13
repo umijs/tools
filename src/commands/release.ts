@@ -65,7 +65,7 @@ export async function run(argv: any) {
   })();
   if (["patch", "minor", "major"].includes(bump)) {
     console.log(`Bumping version to ${bump}...`);
-    await $`npm version ${bump}`;
+    await $`npm version ${bump} --no-commit-hooks --no-git-tag-version`;
   }
   if (bump === "question") {
     const newVersion = await question('Enter the new version: ');
