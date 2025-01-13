@@ -2,16 +2,6 @@ import "zx/globals";
 import getGitRepoInfo from 'git-repo-info';
 import assert from 'assert';
 
-/**
- * release
- * release --no-bump
- * release --no-build
- * release --no-check-git-status
- * release --bump=patch|minor|major|question default: patch
- * release --npm-client=npm|pnpm|yarn|bun default: pnpm
- * release --tag=latest|next|... default: latest or next if version is pre-release
- */
-
 export async function run(argv: any) {
   const cwd = process.cwd();
   const pkg = getPkg(cwd);
@@ -100,6 +90,13 @@ export async function run(argv: any) {
     console.log('Adding to git...');
     await $`${npmClient} install`;
     await $`git add ./`;
+    if (argv.gitTag) {
+      if (isMonorepo) {
+        await $`git tag ${pkg.name}@${newVersion}`;
+      } else {
+        await $`git tag ${newVersion}`;
+      }
+    }
     try {
       if (isMonorepo) {
         await $`git commit -m "release: ${pkg.name}@${newVersion}" -n`;
