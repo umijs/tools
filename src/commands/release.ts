@@ -21,16 +21,23 @@ export async function run(argv: any) {
     || fs.existsSync(path.join(cwd, "../../pnpm-workspace.yaml"));
   const { branch } = getGitRepoInfo();
 
+  console.log(`cwd: ${cwd}`);
+  console.log(`npmClient: ${npmClient}`);
+  console.log(`isMonorepo: ${isMonorepo}`);
+  console.log(`branch: ${branch}`);
+
   if (argv.checkGitStatus !== false) {
     console.log('Checking if git status is clean...');
     const isGitClean = (await $`git status --porcelain`).stdout.trim().length;
     assert(!isGitClean, 'git status is not clean');
   }
 
-  console.log(`cwd: ${cwd}`);
-  console.log(`npmClient: ${npmClient}`);
-  console.log(`isMonorepo: ${isMonorepo}`);
-  console.log(`branch: ${branch}`);
+  // check package access
+  const pkgAccess = pkg.publishConfig?.access;
+  const isScoped = pkg.name.startsWith('@');
+  if (isScoped) {
+    assert(pkgAccess === 'public', 'package access is not public');
+  }
 
   if (argv.build !== false && pkg.scripts?.build) {
     console.log("Building...");
