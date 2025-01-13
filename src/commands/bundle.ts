@@ -54,4 +54,6 @@ export async function run(argv: any) {
     fs.writeFileSync(outputFile, newContent);
     console.log('Output file patched successfully');
   }
+
+  process.exit(0);
 }
