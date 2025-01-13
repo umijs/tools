@@ -100,10 +100,11 @@ export async function run(argv: any) {
     console.log('Adding to git...');
     await $`${npmClient} install`;
     await $`git add ./`;
-    const commitMessage = isMonorepo
-      ? `release: ${pkg.name}@${newVersion}`
-      : `release: ${newVersion}`;
-    await $`git commit -m "${commitMessage}" -n`;
+    if (isMonorepo) {
+      await $`git commit -m "release: ${pkg.name}@${newVersion}" -n`;
+    } else {
+      await $`git commit -m "release: ${newVersion}" -n`;
+    }
   }
 
   console.log("Pushing to git...");
