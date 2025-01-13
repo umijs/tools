@@ -90,18 +90,18 @@ export async function run(argv: any) {
     console.log('Adding to git...');
     await $`${npmClient} install`;
     await $`git add ./`;
-    if (argv.gitTag) {
-      if (isMonorepo) {
-        await $`git tag ${pkg.name}@${newVersion}`;
-      } else {
-        await $`git tag ${newVersion}`;
-      }
-    }
     try {
       if (isMonorepo) {
         await $`git commit -m "release: ${pkg.name}@${newVersion}" -n`;
       } else {
         await $`git commit -m "release: ${newVersion}" -n`;
+      }
+      if (argv.gitTag) {
+        if (isMonorepo) {
+          await $`git tag ${pkg.name}@${newVersion}`;
+        } else {
+          await $`git tag ${newVersion}`;
+        }
       }
     } catch (e) {
       console.log('Nothing to commit, skipping...');
