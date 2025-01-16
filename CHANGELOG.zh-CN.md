@@ -2,7 +2,7 @@
 
 `2025-01-16`
 
-- fix(release): 增强 changelog 翻译，包含作者和 PR 链接 {by [sorrycc](https://github.com/sorrycc) and in [pr](url)}
+- fix(release): 增强 changelog 翻译，包含作者和 PR 链接 by [sorrycc](https://github.com/sorrycc) and in [pr](url)
 
 
 ## 0.1.18
