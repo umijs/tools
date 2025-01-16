@@ -1,6 +1,6 @@
 {
   "name": "@umijs/tools",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "scripts": {
     "release": "./bin/utools.js release --git-tag"
   },
