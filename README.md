@@ -19,6 +19,7 @@ Publish a new version of the package.
 - `--sync-versions=./templates/*/package.json`, sync the versions of the specified package.json.
 - `--sync-publishes=../packages/foo`, sync the publishes of the specified package.json.
 - `--dry-run`, dry run the command.
+- `--github-release`, publish the release to github.
 
 ### bundle
 

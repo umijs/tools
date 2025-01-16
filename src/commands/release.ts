@@ -13,6 +13,7 @@ interface ReleaseOptions {
   syncDeps?: string;
   syncPublishes?: string;
   dryRun?: boolean;
+  githubRelease?: boolean;
 }
 
 export async function run(argv: ReleaseOptions) {
@@ -25,11 +26,15 @@ export async function run(argv: ReleaseOptions) {
     || fs.existsSync(path.join(cwd, "../pnpm-workspace.yaml"))
     || fs.existsSync(path.join(cwd, "../../pnpm-workspace.yaml"));
   const { branch } = getGitRepoInfo();
+  const latestTag = (await $`git describe --tags --abbrev=0`).stdout.trim();
+  const repo = await getGithubRepo();
 
   console.log(`cwd: ${cwd}`);
   console.log(`npmClient: ${npmClient}`);
   console.log(`isMonorepo: ${isMonorepo}`);
   console.log(`branch: ${branch}`);
+  console.log(`latestTag: ${latestTag}`);
+  console.log(`github repo: ${repo}`);
 
   // why check syncDeps here?
   // check should be as early as possible
@@ -75,6 +80,15 @@ export async function run(argv: ReleaseOptions) {
       }
       return p;
     });
+  }
+
+  if (argv.githubRelease) {
+    // make sure gh is installed
+    try {
+      await $`gh --version`;
+    } catch (e) {
+      throw new Error(`gh is not installed, please install it first. It's required for github release.`);
+    }
   }
 
   if (argv.checkGitStatus !== false) {
@@ -220,6 +234,9 @@ export async function run(argv: ReleaseOptions) {
       if (!argv.dryRun) {
         await $`git tag ${v}`;
       }
+      if (argv.githubRelease) {
+        await $`gh release create ${v} --title "${v}" --notes "## What's Changed\n\nhttps://github.com/${repo}/blob/master/CHANGELOG.md#0112\n\n**Full Changelog**: https://github.com/${repo}/compare/${latestTag}...${v}"`;
+      }
     }
   } catch (e) {
     console.log('Nothing to commit, skipping...');
@@ -237,4 +254,10 @@ function getPkg(cwd: string) {
   const pkgPath = path.join(cwd, "package.json");
   const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
   return pkg;
+}
+
+async function getGithubRepo() {
+  const repo = (await $`git config --get remote.origin.url`).stdout.trim();
+  // e.g. extract umijs/tnf from git@github.com:umijs/tnf.git
+  return repo.match(/:(.*)\.git/)?.[1];
 }
