@@ -8,7 +8,7 @@ interface ReleaseOptions {
   build?: boolean;
   bump?: "patch" | "minor" | "major" | "question" | false;
   tag?: string;
-  gitTag?: "prefixed" | false;
+  gitTag?: "prefixed" | "v" | false;
   syncVersions?: string;
   syncDeps?: string;
   syncPublishes?: string;
@@ -211,14 +211,14 @@ export async function run(argv: ReleaseOptions) {
       }
     }
     if (argv.gitTag) {
+      let v = newVersion;
       if (argv.gitTag === 'prefixed') {
-        if (!argv.dryRun) {
-          await $`git tag ${pkg.name}@${newVersion}`;
-        }
-      } else {
-        if (!argv.dryRun) {
-          await $`git tag ${newVersion}`;
-        }
+        v = `${pkg.name}@${newVersion}`;
+      } else if (argv.gitTag === 'v') {
+        v = `v${newVersion}`;
+      }
+      if (!argv.dryRun) {
+        await $`git tag ${v}`;
       }
     }
   } catch (e) {
