@@ -1,3 +1,10 @@
+## 0.1.21
+
+`2025-01-16`
+
+- fix(release): update changelog translation to reference PR numbers correctly by [sorrycc](https://github.com/sorrycc)
+
+
 ## 0.1.20
 
 `2025-01-16`
