@@ -214,6 +214,8 @@ export async function run(argv: ReleaseOptions) {
   console.log('Adding to git...');
   await $`${npmClient} install`;
   await $`git add ./`;
+
+  let newGitTag = newVersion;
   try {
     if (isMonorepo) {
       if (!argv.dryRun) {
@@ -225,19 +227,14 @@ export async function run(argv: ReleaseOptions) {
       }
     }
     if (argv.gitTag) {
-      let v = newVersion;
       if (argv.gitTag === 'prefixed') {
-        v = `${pkg.name}@${newVersion}`;
+        newGitTag = `${pkg.name}@${newVersion}`;
       } else if (argv.gitTag === 'v') {
-        v = `v${newVersion}`;
+        newGitTag = `v${newVersion}`;
       }
       if (!argv.dryRun) {
-        console.log(`Tagging ${v}...`);
-        await $`git tag ${v}`;
-      }
-      if (argv.githubRelease) {
-        console.log(`Creating github release ${v}...`);
-        await $`gh release create ${v} --title "${v}" --notes "## What's Changed\n\nhttps://github.com/${repo}/blob/master/CHANGELOG.md#0112\n\n**Full Changelog**: https://github.com/${repo}/compare/${latestTag}...${v}"`;
+        console.log(`Tagging ${newGitTag}...`);
+        await $`git tag ${newGitTag}`;
       }
     }
   } catch (e) {
@@ -247,6 +244,11 @@ export async function run(argv: ReleaseOptions) {
   console.log("Pushing to git...");
   if (!argv.dryRun) {
     await $`git push origin ${branch} --tags`;
+  }
+
+  if (argv.githubRelease) {
+    console.log(`Creating github release ${newGitTag}...`);
+    await $`gh release create ${newGitTag} --title "${newGitTag}" --notes "## What's Changed\n\nhttps://github.com/${repo}/blob/master/CHANGELOG.md#0112\n\n**Full Changelog**: https://github.com/${repo}/compare/${latestTag}...${newGitTag}"`;
   }
 
   console.log(`Published ${pkg.name}@${newVersion}`);
