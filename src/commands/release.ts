@@ -232,9 +232,11 @@ export async function run(argv: ReleaseOptions) {
         v = `v${newVersion}`;
       }
       if (!argv.dryRun) {
+        console.log(`Tagging ${v}...`);
         await $`git tag ${v}`;
       }
       if (argv.githubRelease) {
+        console.log(`Creating github release ${v}...`);
         await $`gh release create ${v} --title "${v}" --notes "## What's Changed\n\nhttps://github.com/${repo}/blob/master/CHANGELOG.md#0112\n\n**Full Changelog**: https://github.com/${repo}/compare/${latestTag}...${v}"`;
       }
     }
