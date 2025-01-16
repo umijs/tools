@@ -1,8 +1,8 @@
 {
   "name": "@umijs/tools",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "scripts": {
-    "release": "./bin/utools.js release --git-tag --github-release",
+    "release": "./bin/utools.js release --git-tag --github-release --changelog",
     "test": "vitest"
   },
   "authors": [
