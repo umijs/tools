@@ -291,7 +291,7 @@ export async function generateChangelog(latestTag: string, newVersion: string, r
   let logs = (await $`git log --pretty=format:"- %s by @%an" --since "${latestTagTime}"`).stdout.trim().split('\n');
   logs = filterLogs(logs, repo);
   const header = `## ${newVersion}\n\n\`(${new Date().toISOString().split('T')[0]})\`\n`;
-  return [header, ...logs].join('\n');
+  return [header, ...logs].join('\n').trim() + '\n';
 }
 
 export function filterLogs(logs: string[], repo: string) {
