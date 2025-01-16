@@ -66,7 +66,14 @@ export async function run(argv: ReleaseOptions) {
     syncPublishesPaths = argv.syncPublishes.split(',').map(p => {
       assert(fs.existsSync(p), `${p} specified in syncPublishes must exist`);
       assert(fs.statSync(p).isDirectory(), `${p} specified in syncPublishes must be a directory`);
-      return path.join(cwd, p);
+      const pkgPath = path.join(p, 'package.json');
+      assert(fs.existsSync(pkgPath), `${pkgPath} must exist`);
+      const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+      assert(pkg.name, `${pkgPath} must have a name`);
+      if (pkg.name.startsWith('@')) {
+        assert(pkg.publishConfig?.access, `${pkgPath} must have publishConfig.access`);
+      }
+      return p;
     });
   }
 
