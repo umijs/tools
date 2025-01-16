@@ -1,3 +1,10 @@
+## 0.1.18
+
+`2025-01-16`
+
+- feat: add changelog translation support with Google Generative AI by [sorrycc](https://github.com/sorrycc)
+
+
 ## 0.1.17
 
 `2025-01-16`
