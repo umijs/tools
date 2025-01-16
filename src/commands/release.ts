@@ -144,15 +144,17 @@ export async function run(argv: ReleaseOptions) {
     console.log('Syncing dependencies...');
     syncDepsPackageJsons.forEach(p => {
       const pkg = JSON.parse(fs.readFileSync(p, 'utf8'));
+      // TODO: more elegant way to sync exact version
+      const version = pkg.__utool_sync_deps_exact ? newVersion : `^${newVersion}`;
       if (pkg.dependencies?.[name]) {
-        pkg.dependencies[name] = `^${newVersion}`;
+        pkg.dependencies[name] = version;
       } else if (pkg.devDependencies?.[name]) {
-        pkg.devDependencies[name] = `^${newVersion}`;
+        pkg.devDependencies[name] = version;
       }
       if (!argv.dryRun) {
         fs.writeFileSync(p, JSON.stringify(pkg, null, 2) + '\n');
       }
-      console.log(`Synced ${p} to ${newVersion}`);
+      console.log(`Synced ${p} to ${version}`);
     });
   }
 
