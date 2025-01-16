@@ -1,3 +1,10 @@
+## 0.1.19
+
+`2025-01-16`
+
+- fix(release): enhance changelog translation to include author and PR links by [sorrycc](https://github.com/sorrycc)
+
+
 ## 0.1.18
 
 `2025-01-16`
