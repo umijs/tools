@@ -15,6 +15,7 @@ Publish a new version of the package.
 - `--npm-client=npm|pnpm|yarn|bun default: pnpm`, use the specified npm client.
 - `--tag=latest|next|... default: latest or next if version is pre-release`, publish with the specified tag.
 - `--git-tag`, git tag the release version.
+- `--sync-deps=./templates/*/package.json`, sync the dependencies of the specified package.json.
 
 ### bundle
 

@@ -9,11 +9,14 @@ interface ReleaseOptions {
   bump?: "patch" | "minor" | "major" | "question" | false;
   tag?: string;
   gitTag?: boolean;
+  syncDeps?: string;
 }
 
 export async function run(argv: ReleaseOptions) {
   const cwd = process.cwd();
   const pkg = getPkg(cwd);
+  const name = pkg.name;
+  assert(name, 'package.json must have name');
   const npmClient = argv.npmClient || "pnpm";
   const isMonorepo = fs.existsSync(path.join(cwd, "pnpm-workspace.yaml"))
     || fs.existsSync(path.join(cwd, "../pnpm-workspace.yaml"))
@@ -24,6 +27,21 @@ export async function run(argv: ReleaseOptions) {
   console.log(`npmClient: ${npmClient}`);
   console.log(`isMonorepo: ${isMonorepo}`);
   console.log(`branch: ${branch}`);
+
+  // why check syncDeps here?
+  // check should be as early as possible
+  let syncDepsPackageJsons: string[] = [];
+  if (argv.syncDeps) {
+    syncDepsPackageJsons = glob.globbySync(argv.syncDeps, {
+      cwd,
+      absolute: true,
+    });
+    syncDepsPackageJsons.forEach(p => {
+      assert(p.endsWith('package.json'), `${p} specified in syncDeps must be package.json`);
+      const pkg = JSON.parse(fs.readFileSync(p, 'utf8'));
+      assert(pkg.dependencies?.[name] || pkg.devDependencies?.[name], `${p} must depend on ${name}`);
+    });
+  }
 
   if (argv.checkGitStatus !== false) {
     console.log('Checking if git status is clean...');
@@ -99,26 +117,38 @@ export async function run(argv: ReleaseOptions) {
   console.log(`Publishing with tag: ${tag}`);
   await $`npm publish --tag ${tag}`;
 
-  if (bump) {
-    console.log('Adding to git...');
-    await $`${npmClient} install`;
-    await $`git add ./`;
-    try {
-      if (isMonorepo) {
-        await $`git commit -m "release: ${pkg.name}@${newVersion}" -n`;
-      } else {
-        await $`git commit -m "release: ${newVersion}" -n`;
+  if (argv.syncDeps) {
+    console.log('Syncing dependencies...');
+    syncDepsPackageJsons.forEach(p => {
+      const pkg = JSON.parse(fs.readFileSync(p, 'utf8'));
+      if (pkg.dependencies?.[name]) {
+        pkg.dependencies[name] = `^${newVersion}`;
+      } else if (pkg.devDependencies?.[name]) {
+        pkg.devDependencies[name] = `^${newVersion}`;
       }
-      if (argv.gitTag) {
-        if (isMonorepo) {
-          await $`git tag ${pkg.name}@${newVersion}`;
-        } else {
-          await $`git tag ${newVersion}`;
-        }
-      }
-    } catch (e) {
-      console.log('Nothing to commit, skipping...');
+      fs.writeFileSync(p, JSON.stringify(pkg, null, 2) + '\n');
+      console.log(`Synced ${p} to ${newVersion}`);
+    });
+  }
+
+  console.log('Adding to git...');
+  await $`${npmClient} install`;
+  await $`git add ./`;
+  try {
+    if (isMonorepo) {
+      await $`git commit -m "release: ${pkg.name}@${newVersion}" -n`;
+    } else {
+      await $`git commit -m "release: ${newVersion}" -n`;
     }
+    if (argv.gitTag) {
+      if (isMonorepo) {
+        await $`git tag ${pkg.name}@${newVersion}`;
+      } else {
+        await $`git tag ${newVersion}`;
+      }
+    }
+  } catch (e) {
+    console.log('Nothing to commit, skipping...');
   }
 
   console.log("Pushing to git...");
