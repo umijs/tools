@@ -32,6 +32,10 @@ export async function run(argv: any) {
   if (argv.build !== false && pkg.scripts?.build) {
     console.log("Building...");
     await $`npm run build`;
+    if (pkg.scripts?.doctor) {
+      console.log("Doctoring...");
+      await $`npm run doctor`;
+    }
   } else {
     const cue = argv.build === false
       ? "--no-build arg is specified"
