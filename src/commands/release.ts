@@ -309,6 +309,8 @@ export async function generateChangelog(latestTag: string, newVersion: string, r
 
 export function filterLogs(logs: string[], repo: string) {
   logs = logs.filter(l => !l.includes('release:'));
+  logs = logs.filter(l => !l.includes('chore:') && !l.includes('chore('));
+  logs = logs.filter(l => !l.includes('docs:') && !l.includes('docs('));
   logs = logs.map(l => {
     // @sorrycc > [sorrycc](https://github.com/sorrycc)
     const author = l.match(/@(.*)/)?.[1];
