@@ -12,3 +12,10 @@
 `(2025-01-16)`
 
 - fix(release): trim whitespace from generated changelog output by [sorrycc](https://github.com/sorrycc)
+
+
+## 0.1.16
+
+`(2025-01-16)`
+
+- fix(release): update GitHub release notes link to use the correct version format by [sorrycc](https://github.com/sorrycc)
