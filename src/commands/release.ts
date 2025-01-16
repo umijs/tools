@@ -218,7 +218,7 @@ export async function run(argv: ReleaseOptions) {
     const changelog = await generateChangelog(latestTag, newVersion, repo);
     const changelogPath = path.join(cwd, 'CHANGELOG.md');
     const originalChangelog = fs.existsSync(changelogPath) ? fs.readFileSync(changelogPath, 'utf8') : '';
-    const newChangelog = [originalChangelog, changelog].join('\n\n');
+    const newChangelog = [changelog, originalChangelog].join('\n\n');
     fs.writeFileSync(changelogPath, newChangelog);
     console.log(`Generated changelog to ${changelogPath}`);
 
@@ -290,7 +290,7 @@ export async function generateChangelog(latestTag: string, newVersion: string, r
   const latestTagTime = (await $`git show -s --format=%ci ${latestTag}`).stdout.trim();
   let logs = (await $`git log --pretty=format:"- %s by @%an" --since "${latestTagTime}"`).stdout.trim().split('\n');
   logs = filterLogs(logs, repo);
-  const header = `## ${newVersion}\n\n\`(${new Date().toISOString().split('T')[0]})\`\n`;
+  const header = `## ${newVersion}\n\n\`${new Date().toISOString().split('T')[0]}\`\n`;
   return [header, ...logs].join('\n').trim() + '\n';
 }
 
