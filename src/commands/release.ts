@@ -9,6 +9,7 @@ interface ReleaseOptions {
   bump?: "patch" | "minor" | "major" | "question" | false;
   tag?: string;
   gitTag?: boolean;
+  syncVersions?: string;
   syncDeps?: string;
   dryRun?: boolean;
 }
@@ -42,6 +43,20 @@ export async function run(argv: ReleaseOptions) {
       assert(p.endsWith('package.json'), `${p} specified in syncDeps must be package.json`);
       const pkg = JSON.parse(fs.readFileSync(p, 'utf8'));
       assert(pkg.dependencies?.[name] || pkg.devDependencies?.[name], `${p} must depend on ${name}`);
+    });
+  }
+
+  let syncVersionsPackageJsons: string[] = [];
+  if (argv.syncVersions) {
+    const syncVersions = argv.syncVersions.split(',');
+    syncVersionsPackageJsons = glob.globbySync(syncVersions, {
+      cwd,
+      absolute: true,
+    });
+    syncVersionsPackageJsons.forEach(p => {
+      assert(p.endsWith('package.json'), `${p} specified in syncVersions must be package.json`);
+      const pkg = JSON.parse(fs.readFileSync(p, 'utf8'));
+      assert(pkg.version, `${p} must have a version`);
     });
   }
 
@@ -134,6 +149,18 @@ export async function run(argv: ReleaseOptions) {
       } else if (pkg.devDependencies?.[name]) {
         pkg.devDependencies[name] = `^${newVersion}`;
       }
+      if (!argv.dryRun) {
+        fs.writeFileSync(p, JSON.stringify(pkg, null, 2) + '\n');
+      }
+      console.log(`Synced ${p} to ${newVersion}`);
+    });
+  }
+
+  if (argv.syncVersions) {
+    console.log('Syncing versions...');
+    syncVersionsPackageJsons.forEach(p => {
+      const pkg = JSON.parse(fs.readFileSync(p, 'utf8'));
+      pkg.version = newVersion;
       if (!argv.dryRun) {
         fs.writeFileSync(p, JSON.stringify(pkg, null, 2) + '\n');
       }

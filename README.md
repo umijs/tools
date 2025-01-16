@@ -16,6 +16,7 @@ Publish a new version of the package.
 - `--tag=latest|next|... default: latest or next if version is pre-release`, publish with the specified tag.
 - `--git-tag`, git tag the release version.
 - `--sync-deps=./templates/*/package.json`, sync the dependencies of the specified package.json.
+- `--sync-versions=./templates/*/package.json`, sync the versions of the specified package.json.
 - `--dry-run`, dry run the command.
 
 ### bundle
