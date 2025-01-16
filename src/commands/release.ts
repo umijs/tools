@@ -329,6 +329,6 @@ export function filterLogs(logs: string[], repo: string) {
 }
 
 async function translate(changelog: string) {
-  const result = await chat(`Translate the following text to Chinese and keep the original format:\n\n ${changelog}`);
+  const result = await chat(`Translate the following text to Chinese and keep the {by [author](url) and in [pr](url)} in the latest and keep the original format:\n\n ${changelog}`);
   return result;
 }
