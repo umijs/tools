@@ -1,6 +1,7 @@
 import "zx/globals";
 import getGitRepoInfo from 'git-repo-info';
 import assert from 'assert';
+import { chat } from "../libs/chat";
 
 interface ReleaseOptions {
   npmClient?: "pnpm" | "npm" | "yarn" | "bun";
@@ -225,7 +226,19 @@ export async function run(argv: ReleaseOptions) {
     const zhCNChangelogPath = path.join(cwd, 'CHANGELOG.zh-CN.md');
     // TODO: translate changelog to zh-CN
     if (fs.existsSync(zhCNChangelogPath)) {
-      console.log(`NOTICE: YOU SHOULD MANUALLY TRANSLATE THE CHANGELOG TO ZH-CN.`);
+      if (!process.env.GEMINI_API_KEY) {
+        console.log('GEMINI_API_KEY is not set, skipping changelog translation');
+        console.log('You can found it at https://aistudio.google.com/apikey');
+        console.log('You can also set it in your environment variable');
+        console.log('  export GEMINI_API_KEY=your-api-key');
+        console.log(`NOTICE: YOU SHOULD MANUALLY TRANSLATE THE CHANGELOG TO ZH-CN.`);
+      } else {
+        const translatedChangelog = await translate(changelog);
+        const originalChangelog = fs.readFileSync(zhCNChangelogPath, 'utf8');
+        const newChangelog = [translatedChangelog, originalChangelog].join('\n\n');
+        fs.writeFileSync(zhCNChangelogPath, newChangelog);
+        console.log(`Generated zh-CN changelog to ${zhCNChangelogPath}`);
+      }
     }
   }
 
@@ -313,4 +326,9 @@ export function filterLogs(logs: string[], repo: string) {
     return l;
   });
   return logs;
+}
+
+async function translate(changelog: string) {
+  const result = await chat(`Translate the following text to Chinese and keep the original format:\n\n ${changelog}`);
+  return result;
 }
