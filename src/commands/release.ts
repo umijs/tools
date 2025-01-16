@@ -267,7 +267,7 @@ export async function run(argv: ReleaseOptions) {
   if (argv.githubRelease) {
     console.log(`Creating github release ${newGitTag}...`);
     if (!argv.dryRun) {
-      await $`gh release create ${newGitTag} --title "${newGitTag}" --notes "## What's Changed\n\nhttps://github.com/${repo}/blob/master/CHANGELOG.md#0112\n\n**Full Changelog**: https://github.com/${repo}/compare/${latestTag}...${newGitTag}"`;
+      await $`gh release create ${newGitTag} --title "${newGitTag}" --notes "## What's Changed\n\nhttps://github.com/${repo}/blob/master/CHANGELOG.md#${newVersion.replace(/\./g, '')}\n\n**Full Changelog**: https://github.com/${repo}/compare/${latestTag}...${newGitTag}"`;
     }
   }
 
