@@ -168,16 +168,6 @@ export async function run(argv: ReleaseOptions) {
     });
   }
 
-  if (argv.syncPublishes) {
-    console.log('Syncing publishes...');
-    for (const p of syncPublishesPaths) {
-      if (!argv.dryRun) {
-        await $`cd ${p} && npm publish --tag ${tag}`;
-      }
-      console.log(`Published ${p} with tag ${tag}`);
-    }
-  }
-
   if (argv.syncVersions) {
     console.log('Syncing versions...');
     syncVersionsPackageJsons.forEach(p => {
@@ -188,6 +178,16 @@ export async function run(argv: ReleaseOptions) {
       }
       console.log(`Synced ${p} to ${newVersion}`);
     });
+  }
+
+  if (argv.syncPublishes) {
+    console.log('Syncing publishes...');
+    for (const p of syncPublishesPaths) {
+      if (!argv.dryRun) {
+        await $`cd ${p} && npm publish --tag ${tag}`;
+      }
+      console.log(`Published ${p} with tag ${tag}`);
+    }
   }
 
   console.log('Adding to git...');
