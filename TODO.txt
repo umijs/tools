@@ -1,0 +1,3 @@
+
+- [ ] using @umijs/clack-prompt for better ux
+- [ ] exit and continue
