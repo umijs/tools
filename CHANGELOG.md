@@ -1,11 +1,8 @@
-
-
-## 0.1.14
+## 0.1.16
 
 `(2025-01-16)`
 
-- chore: bump version to 0.1.13 and update release script to include changelog generation by [sorrycc](https://github.com/sorrycc)
-- feat: add changelog generation and testing framework by [sorrycc](https://github.com/sorrycc)
+- fix(release): update GitHub release notes link to use the correct version format by [sorrycc](https://github.com/sorrycc)
 
 ## 0.1.15
 
@@ -13,9 +10,9 @@
 
 - fix(release): trim whitespace from generated changelog output by [sorrycc](https://github.com/sorrycc)
 
-
-## 0.1.16
+## 0.1.14
 
 `(2025-01-16)`
 
-- fix(release): update GitHub release notes link to use the correct version format by [sorrycc](https://github.com/sorrycc)
+- chore: bump version to 0.1.13 and update release script to include changelog generation by [sorrycc](https://github.com/sorrycc)
+- feat: add changelog generation and testing framework by [sorrycc](https://github.com/sorrycc)
