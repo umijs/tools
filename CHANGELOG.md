@@ -1,3 +1,11 @@
+## 0.1.17
+
+`2025-01-16`
+
+- docs(changelog): correct versioning and update changelog entries for 0.1.14 and 0.1.16 by [sorrycc](https://github.com/sorrycc)
+- fix(release): correct changelog order and format header timestamp by [sorrycc](https://github.com/sorrycc)
+
+
 ## 0.1.16
 
 `(2025-01-16)`
