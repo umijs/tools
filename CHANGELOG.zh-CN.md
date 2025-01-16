@@ -1,3 +1,10 @@
+## 0.1.20
+
+`2025-01-16`
+
+- fix(release): 改进更新日志翻译，移除不必要的格式，并理清作者和 PR 链接的呈现方式 by [sorrycc](https://github.com/sorrycc) in [pr](url)
+
+
 ## 0.1.19
 
 `2025-01-16`

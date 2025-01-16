@@ -1,3 +1,10 @@
+## 0.1.20
+
+`2025-01-16`
+
+- fix(release): improve changelog translation by removing unnecessary formatting and clarifying author and PR link presentation by [sorrycc](https://github.com/sorrycc)
+
+
 ## 0.1.19
 
 `2025-01-16`
