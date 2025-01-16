@@ -10,6 +10,7 @@ interface ReleaseOptions {
   tag?: string;
   gitTag?: boolean;
   syncDeps?: string;
+  dryRun?: boolean;
 }
 
 export async function run(argv: ReleaseOptions) {
@@ -86,7 +87,9 @@ export async function run(argv: ReleaseOptions) {
   })();
   if (["patch", "minor", "major"].includes(bump as string)) {
     console.log(`Bumping version to ${bump}...`);
-    await $`npm version ${bump} --no-commit-hooks --no-git-tag-version`;
+    if (!argv.dryRun) {
+      await $`npm version ${bump} --no-commit-hooks --no-git-tag-version`;
+    }
   }
   if (bump === "question") {
     const newVersion = await question('Enter the new version: ');
@@ -94,7 +97,9 @@ export async function run(argv: ReleaseOptions) {
     const pkgPath = path.join(cwd, "package.json");
     const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
     pkg.version = newVersion;
-    fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2));
+    if (!argv.dryRun) {
+      fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2));
+    }
   }
 
   const newVersion = getPkg(cwd).version;
@@ -115,7 +120,9 @@ export async function run(argv: ReleaseOptions) {
     }
   })();
   console.log(`Publishing with tag: ${tag}`);
-  await $`npm publish --tag ${tag}`;
+  if (!argv.dryRun) {
+    await $`npm publish --tag ${tag}`;
+  }
 
   if (argv.syncDeps) {
     console.log('Syncing dependencies...');
@@ -126,7 +133,9 @@ export async function run(argv: ReleaseOptions) {
       } else if (pkg.devDependencies?.[name]) {
         pkg.devDependencies[name] = `^${newVersion}`;
       }
-      fs.writeFileSync(p, JSON.stringify(pkg, null, 2) + '\n');
+      if (!argv.dryRun) {
+        fs.writeFileSync(p, JSON.stringify(pkg, null, 2) + '\n');
+      }
       console.log(`Synced ${p} to ${newVersion}`);
     });
   }
@@ -136,15 +145,23 @@ export async function run(argv: ReleaseOptions) {
   await $`git add ./`;
   try {
     if (isMonorepo) {
-      await $`git commit -m "release: ${pkg.name}@${newVersion}" -n`;
+      if (!argv.dryRun) {
+        await $`git commit -m "release: ${pkg.name}@${newVersion}" -n`;
+      }
     } else {
-      await $`git commit -m "release: ${newVersion}" -n`;
+      if (!argv.dryRun) {
+        await $`git commit -m "release: ${newVersion}" -n`;
+      }
     }
     if (argv.gitTag) {
       if (isMonorepo) {
-        await $`git tag ${pkg.name}@${newVersion}`;
+        if (!argv.dryRun) {
+          await $`git tag ${pkg.name}@${newVersion}`;
+        }
       } else {
-        await $`git tag ${newVersion}`;
+        if (!argv.dryRun) {
+          await $`git tag ${newVersion}`;
+        }
       }
     }
   } catch (e) {
@@ -152,7 +169,9 @@ export async function run(argv: ReleaseOptions) {
   }
 
   console.log("Pushing to git...");
-  await $`git push origin ${branch} --tags`;
+  if (!argv.dryRun) {
+    await $`git push origin ${branch} --tags`;
+  }
 
   console.log(`Published ${pkg.name}@${newVersion}`);
 }
