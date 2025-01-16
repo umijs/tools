@@ -1,3 +1,4 @@
 
 - [ ] using @umijs/clack-prompt for better ux
 - [ ] exit and continue
+- [ ] translate changelog to zh-CN with ai

@@ -2,7 +2,8 @@
   "name": "@umijs/tools",
   "version": "0.1.12",
   "scripts": {
-    "release": "./bin/utools.js release --git-tag --github-release"
+    "release": "./bin/utools.js release --git-tag --github-release",
+    "test": "vitest"
   },
   "authors": [
     "chencheng <sorrycc@gmail.com> (https://github.com/sorrycc)"
@@ -20,7 +21,8 @@
     "zx": "^8.3.0"
   },
   "devDependencies": {
-    "@types/node": "^22.10.5"
+    "@types/node": "^22.10.5",
+    "vitest": "^1.4.0"
   },
   "publishConfig": {
     "access": "public"

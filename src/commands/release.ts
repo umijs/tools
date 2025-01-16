@@ -14,6 +14,7 @@ interface ReleaseOptions {
   syncPublishes?: string;
   dryRun?: boolean;
   githubRelease?: boolean;
+  changelog?: boolean;
 }
 
 export async function run(argv: ReleaseOptions) {
@@ -28,6 +29,7 @@ export async function run(argv: ReleaseOptions) {
   const { branch } = getGitRepoInfo();
   const latestTag = (await $`git describe --tags --abbrev=0`).stdout.trim();
   const repo = await getGithubRepo();
+  assert(repo, 'repo is not found');
 
   console.log(`cwd: ${cwd}`);
   console.log(`npmClient: ${npmClient}`);
@@ -211,6 +213,22 @@ export async function run(argv: ReleaseOptions) {
     }
   }
 
+  if (argv.changelog) {
+    console.log('Generating changelog...');
+    const changelog = await generateChangelog(latestTag, newVersion, repo);
+    const changelogPath = path.join(cwd, 'CHANGELOG.md');
+    const originalChangelog = fs.existsSync(changelogPath) ? fs.readFileSync(changelogPath, 'utf8') : '';
+    const newChangelog = [originalChangelog, changelog].join('\n\n');
+    fs.writeFileSync(changelogPath, newChangelog);
+    console.log(`Generated changelog to ${changelogPath}`);
+
+    const zhCNChangelogPath = path.join(cwd, 'CHANGELOG.zh-CN.md');
+    // TODO: translate changelog to zh-CN
+    if (fs.existsSync(zhCNChangelogPath)) {
+      console.log(`NOTICE: YOU SHOULD MANUALLY TRANSLATE THE CHANGELOG TO ZH-CN.`);
+    }
+  }
+
   console.log('Adding to git...');
   await $`${npmClient} install`;
   await $`git add ./`;
@@ -248,7 +266,9 @@ export async function run(argv: ReleaseOptions) {
 
   if (argv.githubRelease) {
     console.log(`Creating github release ${newGitTag}...`);
-    await $`gh release create ${newGitTag} --title "${newGitTag}" --notes "## What's Changed\n\nhttps://github.com/${repo}/blob/master/CHANGELOG.md#0112\n\n**Full Changelog**: https://github.com/${repo}/compare/${latestTag}...${newGitTag}"`;
+    if (!argv.dryRun) {
+      await $`gh release create ${newGitTag} --title "${newGitTag}" --notes "## What's Changed\n\nhttps://github.com/${repo}/blob/master/CHANGELOG.md#0112\n\n**Full Changelog**: https://github.com/${repo}/compare/${latestTag}...${newGitTag}"`;
+    }
   }
 
   console.log(`Published ${pkg.name}@${newVersion}`);
@@ -264,4 +284,33 @@ async function getGithubRepo() {
   const repo = (await $`git config --get remote.origin.url`).stdout.trim();
   // e.g. extract umijs/tnf from git@github.com:umijs/tnf.git
   return repo.match(/:(.*)\.git/)?.[1];
+}
+
+export async function generateChangelog(latestTag: string, newVersion: string, repo: string) {
+  const latestTagTime = (await $`git show -s --format=%ci ${latestTag}`).stdout.trim();
+  let logs = (await $`git log --pretty=format:"- %s by @%an" --since "${latestTagTime}"`).stdout.trim().split('\n');
+  logs = filterLogs(logs, repo);
+  const header = `## ${newVersion}\n\n\`(${new Date().toISOString().split('T')[0]})\`\n`;
+  return [header, ...logs].join('\n');
+}
+
+export function filterLogs(logs: string[], repo: string) {
+  logs = logs.filter(l => !l.includes('release:'));
+  logs = logs.map(l => {
+    // @sorrycc > [sorrycc](https://github.com/sorrycc)
+    const author = l.match(/@(.*)/)?.[1];
+    l = l.replace(new RegExp(`@${author}`, 'g'), `[${author}](https://github.com/${author})`);
+    // (#123) > [#123](https://github.com/umijs/tnf/pull/123)
+    const issues: string[] = [];
+    l = l.replace(/\(#(\d+)\)/g, (m, p1) => {
+      issues.push(p1);
+      return '';
+    });
+    if (issues.length) {
+      l += ` in ${issues.map(i => `[#${i}](https://github.com/${repo}/pull/${i})`).join(' ')}`;
+    }
+    l = l.replace(/\s+/g, ' ');
+    return l;
+  });
+  return logs;
 }
