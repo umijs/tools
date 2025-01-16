@@ -8,7 +8,7 @@ interface ReleaseOptions {
   build?: boolean;
   bump?: "patch" | "minor" | "major" | "question" | false;
   tag?: string;
-  gitTag?: boolean;
+  gitTag?: "prefixed" | false;
   syncVersions?: string;
   syncDeps?: string;
   syncPublishes?: string;
@@ -204,7 +204,7 @@ export async function run(argv: ReleaseOptions) {
       }
     }
     if (argv.gitTag) {
-      if (isMonorepo) {
+      if (argv.gitTag === 'prefixed') {
         if (!argv.dryRun) {
           await $`git tag ${pkg.name}@${newVersion}`;
         }
