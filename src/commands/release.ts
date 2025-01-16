@@ -2,7 +2,16 @@ import "zx/globals";
 import getGitRepoInfo from 'git-repo-info';
 import assert from 'assert';
 
-export async function run(argv: any) {
+interface ReleaseOptions {
+  npmClient?: "pnpm" | "npm" | "yarn" | "bun";
+  checkGitStatus?: boolean;
+  build?: boolean;
+  bump?: "patch" | "minor" | "major" | "question" | false;
+  tag?: string;
+  gitTag?: boolean;
+}
+
+export async function run(argv: ReleaseOptions) {
   const cwd = process.cwd();
   const pkg = getPkg(cwd);
   const npmClient = argv.npmClient || "pnpm";
@@ -48,7 +57,7 @@ export async function run(argv: any) {
     if (argv.bump === false) {
       return false;
     } else {
-      if (["patch", "minor", "major", "question"].includes(argv.bump)) {
+      if (["patch", "minor", "major", "question"].includes(argv.bump as string)) {
         return argv.bump;
       } else if (!argv.bump) {
         return "patch";
@@ -57,7 +66,7 @@ export async function run(argv: any) {
       }
     }
   })();
-  if (["patch", "minor", "major"].includes(bump)) {
+  if (["patch", "minor", "major"].includes(bump as string)) {
     console.log(`Bumping version to ${bump}...`);
     await $`npm version ${bump} --no-commit-hooks --no-git-tag-version`;
   }

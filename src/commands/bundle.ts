@@ -1,7 +1,15 @@
 import "zx/globals";
 import assert from 'assert';
 
-export async function run(argv: any) {
+interface BundleOptions {
+  entry?: string;
+  mode?: "production" | "development";
+  minify?: boolean;
+  outputPath?: string;
+  patchDirname?: boolean;
+}
+
+export async function run(argv: BundleOptions) {
   console.log('Bundling...');
 
   const cwd = process.cwd();
