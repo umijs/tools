@@ -17,6 +17,7 @@ Publish a new version of the package.
 - `--git-tag`, git tag the release version.
 - `--sync-deps=./templates/*/package.json`, sync the dependencies of the specified package.json. Notice: use `__utool_sync_deps_exact` in target package.json to sync exact version.
 - `--sync-versions=./templates/*/package.json`, sync the versions of the specified package.json.
+- `--sync-publishes=../packages/foo`, sync the publishes of the specified package.json.
 - `--dry-run`, dry run the command.
 
 ### bundle

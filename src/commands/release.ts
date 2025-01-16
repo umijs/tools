@@ -11,6 +11,7 @@ interface ReleaseOptions {
   gitTag?: boolean;
   syncVersions?: string;
   syncDeps?: string;
+  syncPublishes?: string;
   dryRun?: boolean;
 }
 
@@ -57,6 +58,15 @@ export async function run(argv: ReleaseOptions) {
       assert(p.endsWith('package.json'), `${p} specified in syncVersions must be package.json`);
       const pkg = JSON.parse(fs.readFileSync(p, 'utf8'));
       assert(pkg.version, `${p} must have a version`);
+    });
+  }
+
+  let syncPublishesPaths: string[] = [];
+  if (argv.syncPublishes) {
+    syncPublishesPaths = argv.syncPublishes.split(',').map(p => {
+      assert(fs.existsSync(p), `${p} specified in syncPublishes must exist`);
+      assert(fs.statSync(p).isDirectory(), `${p} specified in syncPublishes must be a directory`);
+      return path.join(cwd, p);
     });
   }
 
@@ -156,6 +166,16 @@ export async function run(argv: ReleaseOptions) {
       }
       console.log(`Synced ${p} to ${version}`);
     });
+  }
+
+  if (argv.syncPublishes) {
+    console.log('Syncing publishes...');
+    for (const p of syncPublishesPaths) {
+      if (!argv.dryRun) {
+        await $`cd ${p} && npm publish --tag ${tag}`;
+      }
+      console.log(`Published ${p} with tag ${tag}`);
+    }
   }
 
   if (argv.syncVersions) {
