@@ -87,7 +87,7 @@ export async function run(argv: ReleaseOptions) {
     console.log(`Skipping build since ${cue}`);
   }
 
-  console.log("Bumping version...", argv.bump);
+  console.log(`Bumping version with argv.bump: ${argv.bump} ...`);
   const bump = await (async () => {
     if (argv.bump === false) {
       return false;
