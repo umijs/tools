@@ -33,7 +33,8 @@ export async function run(argv: ReleaseOptions) {
   // check should be as early as possible
   let syncDepsPackageJsons: string[] = [];
   if (argv.syncDeps) {
-    syncDepsPackageJsons = glob.globbySync(argv.syncDeps, {
+    const syncDeps = argv.syncDeps.split(',');
+    syncDepsPackageJsons = glob.globbySync(syncDeps, {
       cwd,
       absolute: true,
     });
