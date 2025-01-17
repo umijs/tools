@@ -2,6 +2,10 @@ import "zx/globals";
 import getGitRepoInfo from 'git-repo-info';
 import assert from 'assert';
 import { chat } from "../libs/chat";
+import * as p from '@umijs/clack-prompts';
+import pc from 'picocolors';
+
+const CANCEL_TEXT = 'Operation cancelled.'
 
 interface ReleaseOptions {
   npmClient?: "pnpm" | "npm" | "yarn" | "bun";
@@ -19,272 +23,320 @@ interface ReleaseOptions {
 }
 
 export async function run(argv: ReleaseOptions) {
-  const cwd = process.cwd();
-  const pkg = getPkg(cwd);
-  const name = pkg.name;
-  assert(name, 'package.json must have name');
-  const npmClient = argv.npmClient || "pnpm";
-  const isMonorepo = fs.existsSync(path.join(cwd, "pnpm-workspace.yaml"))
-    || fs.existsSync(path.join(cwd, "../pnpm-workspace.yaml"))
-    || fs.existsSync(path.join(cwd, "../../pnpm-workspace.yaml"));
-  const { branch } = getGitRepoInfo();
-  const latestTag = (await $`git describe --tags --abbrev=0`).stdout.trim();
-  const repo = await getGithubRepo();
-  assert(repo, 'repo is not found');
-
-  console.log(`cwd: ${cwd}`);
-  console.log(`npmClient: ${npmClient}`);
-  console.log(`isMonorepo: ${isMonorepo}`);
-  console.log(`branch: ${branch}`);
-  console.log(`latestTag: ${latestTag}`);
-  console.log(`github repo: ${repo}`);
-
-  // why check syncDeps here?
-  // check should be as early as possible
-  let syncDepsPackageJsons: string[] = [];
-  if (argv.syncDeps) {
-    const syncDeps = argv.syncDeps.split(',');
-    syncDepsPackageJsons = glob.globbySync(syncDeps, {
-      cwd,
-      absolute: true,
-    });
-    syncDepsPackageJsons.forEach(p => {
-      assert(p.endsWith('package.json'), `${p} specified in syncDeps must be package.json`);
-      const pkg = JSON.parse(fs.readFileSync(p, 'utf8'));
-      assert(pkg.dependencies?.[name] || pkg.devDependencies?.[name], `${p} must depend on ${name}`);
-    });
-  }
-
-  let syncVersionsPackageJsons: string[] = [];
-  if (argv.syncVersions) {
-    const syncVersions = argv.syncVersions.split(',');
-    syncVersionsPackageJsons = glob.globbySync(syncVersions, {
-      cwd,
-      absolute: true,
-    });
-    syncVersionsPackageJsons.forEach(p => {
-      assert(p.endsWith('package.json'), `${p} specified in syncVersions must be package.json`);
-      const pkg = JSON.parse(fs.readFileSync(p, 'utf8'));
-      assert(pkg.version, `${p} must have a version`);
-    });
-  }
-
-  let syncPublishesPaths: string[] = [];
-  if (argv.syncPublishes) {
-    syncPublishesPaths = argv.syncPublishes.split(',').map(p => {
-      assert(fs.existsSync(p), `${p} specified in syncPublishes must exist`);
-      assert(fs.statSync(p).isDirectory(), `${p} specified in syncPublishes must be a directory`);
-      const pkgPath = path.join(p, 'package.json');
-      assert(fs.existsSync(pkgPath), `${pkgPath} must exist`);
-      const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
-      assert(pkg.name, `${pkgPath} must have a name`);
-      if (pkg.name.startsWith('@')) {
-        assert(pkg.publishConfig?.access, `${pkgPath} must have publishConfig.access`);
-      }
-      return p;
-    });
-  }
-
-  if (argv.githubRelease) {
-    // make sure gh is installed
+  p.intro('Release');
     try {
-      await $`gh --version`;
-    } catch (e) {
-      throw new Error(`gh is not installed, please install it first. It's required for github release.`);
+    const cwd = process.cwd();
+    const pkg = getPkg(cwd);
+    const name = pkg.name;
+    assert(name, 'package.json must have name');
+    const npmClient = argv.npmClient || "pnpm";
+    const isMonorepo = fs.existsSync(path.join(cwd, "pnpm-workspace.yaml"))
+      || fs.existsSync(path.join(cwd, "../pnpm-workspace.yaml"))
+      || fs.existsSync(path.join(cwd, "../../pnpm-workspace.yaml"));
+    const { branch } = getGitRepoInfo();
+    const latestTag = (await $`git describe --tags --abbrev=0`).stdout.trim();
+    const repo = await getGithubRepo();
+    assert(repo, 'repo is not found');
+
+    const infos = [
+      `cwd: ${cwd}`,
+      `npmClient: ${npmClient}`,
+      `isMonorepo: ${isMonorepo}`,
+      `branch: ${branch}`,
+      `latestTag: ${latestTag}`,
+      `github repo: ${repo}`,
+    ];
+    p.box(infos.join('\n'), 'Release Info');
+
+    // why check syncDeps here?
+    // check should be as early as possible
+    let syncDepsPackageJsons: string[] = [];
+    if (argv.syncDeps) {
+      const syncDeps = argv.syncDeps.split(',');
+      syncDepsPackageJsons = glob.globbySync(syncDeps, {
+        cwd,
+        absolute: true,
+      });
+      syncDepsPackageJsons.forEach(p => {
+        assert(p.endsWith('package.json'), `${p} specified in syncDeps must be package.json`);
+        const pkg = JSON.parse(fs.readFileSync(p, 'utf8'));
+        assert(pkg.dependencies?.[name] || pkg.devDependencies?.[name], `${p} must depend on ${name}`);
+      });
     }
-  }
 
-  if (argv.checkGitStatus !== false) {
-    console.log('Checking if git status is clean...');
-    const isGitClean = (await $`git status --porcelain`).stdout.trim().length;
-    assert(!isGitClean, 'git status is not clean');
-  }
-
-  // check package access
-  const pkgAccess = pkg.publishConfig?.access;
-  const isScoped = pkg.name.startsWith('@');
-  if (isScoped) {
-    assert(pkgAccess === 'public', 'package access is not public');
-  }
-
-  if (argv.build !== false && pkg.scripts?.build) {
-    console.log("Building...");
-    await $`npm run build`;
-    if (pkg.scripts?.doctor) {
-      console.log("Doctoring...");
-      await $`npm run doctor`;
+    let syncVersionsPackageJsons: string[] = [];
+    if (argv.syncVersions) {
+      const syncVersions = argv.syncVersions.split(',');
+      syncVersionsPackageJsons = glob.globbySync(syncVersions, {
+        cwd,
+        absolute: true,
+      });
+      syncVersionsPackageJsons.forEach(p => {
+        assert(p.endsWith('package.json'), `${p} specified in syncVersions must be package.json`);
+        const pkg = JSON.parse(fs.readFileSync(p, 'utf8'));
+        assert(pkg.version, `${p} must have a version`);
+      });
     }
-  } else {
-    const cue = argv.build === false
-      ? "--no-build arg is specified"
-      : "no build script found";
-    console.log(`Skipping build since ${cue}`);
-  }
 
-  console.log(`Bumping version with argv.bump: ${argv.bump} ...`);
-  const bump = await (async () => {
-    if (argv.bump === false) {
-      return false;
+    let syncPublishesPaths: string[] = [];
+    if (argv.syncPublishes) {
+      syncPublishesPaths = argv.syncPublishes.split(',').map(p => {
+        assert(fs.existsSync(p), `${p} specified in syncPublishes must exist`);
+        assert(fs.statSync(p).isDirectory(), `${p} specified in syncPublishes must be a directory`);
+        const pkgPath = path.join(p, 'package.json');
+        assert(fs.existsSync(pkgPath), `${pkgPath} must exist`);
+        const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+        assert(pkg.name, `${pkgPath} must have a name`);
+        if (pkg.name.startsWith('@')) {
+          assert(pkg.publishConfig?.access, `${pkgPath} must have publishConfig.access`);
+        }
+        return p;
+      });
+    }
+
+    if (argv.githubRelease) {
+      // make sure gh is installed
+      try {
+        await $`gh --version`;
+      } catch (e) {
+        throw new Error(`gh is not installed, please install it first. It's required for github release.`);
+      }
+    }
+
+    if (argv.checkGitStatus !== false) {
+      const s = p.spinner();
+      s.start('Checking if git status is clean...');
+      const isGitClean = (await $`git status --porcelain`).stdout.trim().length;
+      assert(!isGitClean, 'git status is not clean');
+      s.stop('Git status is clean');
+    }
+
+    // check package access
+    p.log.step('Checking package access...');
+    const pkgAccess = pkg.publishConfig?.access;
+    const isScoped = pkg.name.startsWith('@');
+    if (isScoped) {
+      assert(pkgAccess === 'public', 'package access is not public');
+    }
+
+    if (argv.build !== false && pkg.scripts?.build) {
+      const s = p.spinner();
+      s.start('Building...');
+      await $`npm run build`;
+      s.stop('Build finished');
+      if (pkg.scripts?.doctor) {
+        const s = p.spinner();
+        s.start('Doctoring...');
+        await $`npm run doctor`;
+        s.stop('Doctor finished');
+      }
     } else {
-      if (["patch", "minor", "major", "question"].includes(argv.bump as string)) {
-        return argv.bump;
-      } else if (!argv.bump) {
-        return "patch";
+      const cue = argv.build === false
+        ? "--no-build arg is specified"
+        : "no build script found";
+      p.log.info(`Skipping build since ${cue}`);
+    }
+
+    p.log.info(`Bumping version with argv.bump: ${argv.bump} ...`);
+    const bump = await (async () => {
+      if (argv.bump === false) {
+        return false;
       } else {
-        throw new Error(`Invalid bump type: ${argv.bump}`);
+        if (["patch", "minor", "major", "question"].includes(argv.bump as string)) {
+          return argv.bump;
+        } else if (!argv.bump) {
+          return "patch";
+        } else {
+          throw new Error(`Invalid bump type: ${argv.bump}`);
+        }
       }
-    }
-  })();
-  if (["patch", "minor", "major"].includes(bump as string)) {
-    console.log(`Bumping version to ${bump}...`);
-    if (!argv.dryRun) {
-      await $`npm version ${bump} --no-commit-hooks --no-git-tag-version`;
-    }
-  }
-  if (bump === "question") {
-    const newVersion = await question('Enter the new version: ');
-    console.log(`Bumping version to ${newVersion}...`);
-    const pkgPath = path.join(cwd, "package.json");
-    const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
-    pkg.version = newVersion;
-    if (!argv.dryRun) {
-      fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2));
-    }
-  }
-
-  const newVersion = getPkg(cwd).version;
-  console.log(`New version: ${newVersion}`);
-
-  console.log("Publishing...");
-  const tag = (() => {
-    if (argv.tag) {
-      return argv.tag;
-    } else if (
-      newVersion.includes('-alpha.') ||
-      newVersion.includes('-beta.') ||
-      newVersion.includes('-rc.')
-    ) {
-      return 'next';
-    } else {
-      return 'latest';
-    }
-  })();
-  console.log(`Publishing with tag: ${tag}`);
-  if (!argv.dryRun) {
-    await $`npm publish --tag ${tag}`;
-  }
-
-  if (argv.syncDeps) {
-    console.log('Syncing dependencies...');
-    syncDepsPackageJsons.forEach(p => {
-      const pkg = JSON.parse(fs.readFileSync(p, 'utf8'));
-      // TODO: more elegant way to sync exact version
-      const version = pkg.__utool_sync_deps_exact ? newVersion : `^${newVersion}`;
-      if (pkg.dependencies?.[name]) {
-        pkg.dependencies[name] = version;
-      } else if (pkg.devDependencies?.[name]) {
-        pkg.devDependencies[name] = version;
-      }
+    })();
+    if (["patch", "minor", "major"].includes(bump as string)) {
+      const s = p.spinner();
+      s.start(`Bumping version to ${bump}...`);
       if (!argv.dryRun) {
-        fs.writeFileSync(p, JSON.stringify(pkg, null, 2) + '\n');
+        await $`npm version ${bump} --no-commit-hooks --no-git-tag-version`;
       }
-      console.log(`Synced ${p} to ${version}`);
-    });
-  }
-
-  if (argv.syncVersions) {
-    console.log('Syncing versions...');
-    syncVersionsPackageJsons.forEach(p => {
-      const pkg = JSON.parse(fs.readFileSync(p, 'utf8'));
+      s.stop(`Bumped version to ${bump}`);
+    }
+    if (bump === "question") {
+      const newVersion = await p.text({
+        message: 'Enter the new version: ',
+      });
+      assert(!p.isCancel(newVersion), CANCEL_TEXT);
+      p.log.step(`Bumping version to ${newVersion}...`);
+      const pkgPath = path.join(cwd, "package.json");
+      const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
       pkg.version = newVersion;
       if (!argv.dryRun) {
-        fs.writeFileSync(p, JSON.stringify(pkg, null, 2) + '\n');
+        fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2));
       }
-      console.log(`Synced ${p} to ${newVersion}`);
-    });
-  }
-
-  if (argv.syncPublishes) {
-    console.log('Syncing publishes...');
-    for (const p of syncPublishesPaths) {
-      if (!argv.dryRun) {
-        await $`cd ${p} && npm publish --tag ${tag}`;
-      }
-      console.log(`Published ${p} with tag ${tag}`);
     }
-  }
 
-  if (argv.changelog) {
-    console.log('Generating changelog...');
-    const changelog = await generateChangelog(latestTag, newVersion, repo);
-    const changelogPath = path.join(cwd, 'CHANGELOG.md');
-    const originalChangelog = fs.existsSync(changelogPath) ? fs.readFileSync(changelogPath, 'utf8') : '';
-    const newChangelog = [changelog, originalChangelog].join('\n\n');
-    fs.writeFileSync(changelogPath, newChangelog);
-    console.log(`Generated changelog to ${changelogPath}`);
+    const newVersion = getPkg(cwd).version;
+    p.log.info(`New version: ${newVersion}`);
 
-    const zhCNChangelogPath = path.join(cwd, 'CHANGELOG.zh-CN.md');
-    // TODO: translate changelog to zh-CN
-    if (fs.existsSync(zhCNChangelogPath)) {
-      if (!process.env.GEMINI_API_KEY) {
-        console.log('GEMINI_API_KEY is not set, skipping changelog translation');
-        console.log('You can found it at https://aistudio.google.com/apikey');
-        console.log('You can also set it in your environment variable');
-        console.log('  export GEMINI_API_KEY=your-api-key');
-        console.log(`NOTICE: YOU SHOULD MANUALLY TRANSLATE THE CHANGELOG TO ZH-CN.`);
+    const s = p.spinner();
+    s.start('Publishing...');
+    const tag = (() => {
+      if (argv.tag) {
+        return argv.tag;
+      } else if (
+        newVersion.includes('-alpha.') ||
+        newVersion.includes('-beta.') ||
+        newVersion.includes('-rc.')
+      ) {
+        return 'next';
       } else {
-        const translatedChangelog = await translate(changelog);
-        const originalChangelog = fs.readFileSync(zhCNChangelogPath, 'utf8');
-        const newChangelog = [translatedChangelog, originalChangelog].join('\n\n');
-        fs.writeFileSync(zhCNChangelogPath, newChangelog);
-        console.log(`Generated zh-CN changelog to ${zhCNChangelogPath}`);
+        return 'latest';
       }
-    }
-  }
-
-  console.log('Adding to git...');
-  await $`${npmClient} install`;
-  await $`git add ./`;
-
-  let newGitTag = newVersion;
-  try {
-    if (isMonorepo) {
-      if (!argv.dryRun) {
-        await $`git commit -m "release: ${pkg.name}@${newVersion}" -n`;
-      }
-    } else {
-      if (!argv.dryRun) {
-        await $`git commit -m "release: ${newVersion}" -n`;
-      }
-    }
-    if (argv.gitTag) {
-      if (argv.gitTag === 'prefixed') {
-        newGitTag = `${pkg.name}@${newVersion}`;
-      } else if (argv.gitTag === 'v') {
-        newGitTag = `v${newVersion}`;
-      }
-      if (!argv.dryRun) {
-        console.log(`Tagging ${newGitTag}...`);
-        await $`git tag ${newGitTag}`;
-      }
-    }
-  } catch (e) {
-    console.log('Nothing to commit, skipping...');
-  }
-
-  console.log("Pushing to git...");
-  if (!argv.dryRun) {
-    await $`git push origin ${branch} --tags`;
-  }
-
-  if (argv.githubRelease) {
-    console.log(`Creating github release ${newGitTag}...`);
+    })();
+    s.message(`Publishing with tag: ${tag}`);
     if (!argv.dryRun) {
-      await $`gh release create ${newGitTag} --title "${newGitTag}" --notes "## What's Changed\n\nhttps://github.com/${repo}/blob/master/CHANGELOG.md#${newVersion.replace(/\./g, '')}\n\n**Full Changelog**: https://github.com/${repo}/compare/${latestTag}...${newGitTag}"`;
+      await $`npm publish --tag ${tag}`;
     }
-  }
+    s.stop(`Published with tag: ${tag}`);
 
-  console.log(`Published ${pkg.name}@${newVersion}`);
+    if (argv.syncDeps) {
+      const s = p.spinner();
+      s.start('Syncing dependencies...');
+      syncDepsPackageJsons.forEach(packageJson => {
+        const pkg = JSON.parse(fs.readFileSync(packageJson, 'utf8'));
+        // TODO: more elegant way to sync exact version
+        const version = pkg.__utool_sync_deps_exact ? newVersion : `^${newVersion}`;
+        if (pkg.dependencies?.[name]) {
+          pkg.dependencies[name] = version;
+        } else if (pkg.devDependencies?.[name]) {
+          pkg.devDependencies[name] = version;
+        }
+        if (!argv.dryRun) {
+          fs.writeFileSync(packageJson, JSON.stringify(pkg, null, 2) + '\n');
+        }
+        s.message(`Synced ${packageJson} to ${version}`);
+      });
+      s.stop('Synced dependencies');
+    }
+
+    if (argv.syncVersions) {
+      const s = p.spinner();
+      s.start('Syncing versions...');
+      syncVersionsPackageJsons.forEach(p => {
+        const pkg = JSON.parse(fs.readFileSync(p, 'utf8'));
+        pkg.version = newVersion;
+        if (!argv.dryRun) {
+          fs.writeFileSync(p, JSON.stringify(pkg, null, 2) + '\n');
+        }
+        s.message(`Synced ${p} to ${newVersion}`);
+      });
+      s.stop('Synced versions');
+    }
+
+    if (argv.syncPublishes) {
+      const s = p.spinner();
+      s.start('Syncing publishes...');
+      for (const p of syncPublishesPaths) {
+        if (!argv.dryRun) {
+          await $`cd ${p} && npm publish --tag ${tag}`;
+        }
+        s.message(`Published ${p} with tag ${tag}`);
+      }
+      s.stop('Synced publishes');
+    }
+
+    if (argv.changelog) {
+      const s = p.spinner();
+      s.start('Generating changelog...');
+      const changelog = await generateChangelog(latestTag, newVersion, repo);
+      const changelogPath = path.join(cwd, 'CHANGELOG.md');
+      const originalChangelog = fs.existsSync(changelogPath) ? fs.readFileSync(changelogPath, 'utf8') : '';
+      const newChangelog = [changelog, originalChangelog].join('\n\n');
+      fs.writeFileSync(changelogPath, newChangelog);
+      s.stop(`Generated changelog to ${changelogPath}`);
+
+      const zhCNChangelogPath = path.join(cwd, 'CHANGELOG.zh-CN.md');
+      // TODO: translate changelog to zh-CN
+      if (fs.existsSync(zhCNChangelogPath)) {
+        if (!process.env.GEMINI_API_KEY) {
+          const messages = [
+            'GEMINI_API_KEY is not set, skipping changelog translation',
+            'You can found it at https://aistudio.google.com/apikey',
+            'You can also set it in your environment variable',
+            '  export GEMINI_API_KEY=your-api-key',
+            `NOTICE: YOU SHOULD MANUALLY TRANSLATE THE CHANGELOG TO ZH-CN.`,
+          ];
+          p.box(messages.join('\n'), pc.yellow('NOTICE'));
+        } else {
+          const translatedChangelog = await translate(changelog);
+          const originalChangelog = fs.readFileSync(zhCNChangelogPath, 'utf8');
+          const newChangelog = [translatedChangelog, originalChangelog].join('\n\n');
+          fs.writeFileSync(zhCNChangelogPath, newChangelog);
+          p.log.step(`Generated zh-CN changelog to ${zhCNChangelogPath}`);
+        }
+      }
+    }
+
+    await (async () => {
+      const s = p.spinner();
+      s.start('Adding to git...');
+      await $`${npmClient} install`;
+      await $`git add ./`;
+      s.stop('Added to git');
+    })();
+
+    let newGitTag = newVersion;
+    try {
+      const s = p.spinner();
+      s.start('Committing to git...');
+      if (isMonorepo) {
+        if (!argv.dryRun) {
+          await $`git commit -m "release: ${pkg.name}@${newVersion}" -n`;
+        }
+      } else {
+        if (!argv.dryRun) {
+          await $`git commit -m "release: ${newVersion}" -n`;
+        }
+      }
+      s.stop('Committed to git');
+      if (argv.gitTag) {
+        const s = p.spinner();
+        s.start('Tagging...');
+        if (argv.gitTag === 'prefixed') {
+          newGitTag = `${pkg.name}@${newVersion}`;
+        } else if (argv.gitTag === 'v') {
+          newGitTag = `v${newVersion}`;
+        }
+        if (!argv.dryRun) {
+          s.message(`Tagging ${newGitTag}...`);
+          await $`git tag ${newGitTag}`;
+        }
+        s.stop(`Tagged ${newGitTag}`);
+      }
+    } catch (e) {
+      p.log.info('Nothing to commit, skipping...');
+    }
+
+    await (async () => {
+      const s = p.spinner();
+      s.start('Pushing to git...');
+      if (!argv.dryRun) {
+        await $`git push origin ${branch} --tags`;
+      }
+      s.stop('Pushed to git');
+    })();
+
+    if (argv.githubRelease) {
+      const s = p.spinner();
+      s.start(`Creating github release ${newGitTag}...`);
+      if (!argv.dryRun) {
+        await $`gh release create ${newGitTag} --title "${newGitTag}" --notes "## What's Changed\n\nhttps://github.com/${repo}/blob/master/CHANGELOG.md#${newVersion.replace(/\./g, '')}\n\n**Full Changelog**: https://github.com/${repo}/compare/${latestTag}...${newGitTag}"`;
+      }
+      s.stop(`Created github release ${newGitTag}`);
+    }
+
+    p.outro(`Published ${pkg.name}@${newVersion}`);
+  } catch (e) {
+    p.cancel(`Release failed: ${e}`);
+  }
 }
 
 function getPkg(cwd: string) {
