@@ -373,15 +373,15 @@ export async function generateChangelog(latestTag: string, newVersion: string, r
 }
 
 export function filterLogs(logs: string[], repo: string) {
-  logs = logs.filter(l => !l.startsWith('release:'));
-  logs = logs.filter(l => !l.startsWith('chore:') && !l.startsWith('chore('));
-  logs = logs.filter(l => !l.startsWith('docs:') && !l.startsWith('docs('));
-  logs = logs.filter(l => !l.startsWith('ci:') && !l.startsWith('ci('));
-  logs = logs.filter(l => !l.startsWith('test:') && !l.startsWith('test('));
+  logs = logs.filter(l => !l.startsWith('- release:'));
+  logs = logs.filter(l => !l.startsWith('- chore:') && !l.startsWith('- chore('));
+  logs = logs.filter(l => !l.startsWith('- docs:') && !l.startsWith('- docs('));
+  logs = logs.filter(l => !l.startsWith('- ci:') && !l.startsWith('- ci('));
+  logs = logs.filter(l => !l.startsWith('- test:') && !l.startsWith('- test('));
   logs = logs.map(l => {
     // @sorrycc > [sorrycc](https://github.com/sorrycc)
-    const author = l.match(/@(.*)/)?.[1];
-    l = l.replace(new RegExp(`@${author}`, 'g'), `[${author}](https://github.com/${author})`);
+    const author = l.match(/by @(.*)/)?.[1];
+    l = l.replace(new RegExp(`@${author}`, 'g'), `[@${author}](https://github.com/${author})`);
     // (#123) > [#123](https://github.com/umijs/tnf/pull/123)
     const issues: string[] = [];
     l = l.replace(/\(#(\d+)\)/g, (m, p1) => {
