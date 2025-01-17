@@ -1,3 +1,11 @@
+## 0.1.23
+
+`2025-01-17`
+
+- refactor(release): 重构(发布)：用 taskLog 替换 spinner，以改进发布、推送和 GitHub 发布创建过程中的日志记录 by [sorrycc](https://github.com/sorrycc)
+- release: 发布 0.1.22 by [sorrycc](https://github.com/sorrycc)
+
+
 ## 0.1.22
 
 `2025-01-17`

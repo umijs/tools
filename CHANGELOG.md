@@ -1,3 +1,11 @@
+## 0.1.23
+
+`2025-01-17`
+
+- refactor(release): replace spinner with taskLog for improved logging during publish, push, and GitHub release creation by [sorrycc](https://github.com/sorrycc)
+- release: 0.1.22 by [sorrycc](https://github.com/sorrycc)
+
+
 ## 0.1.22
 
 `2025-01-17`
