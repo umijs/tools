@@ -6,6 +6,8 @@
 
 Publish a new version of the package.
 
+![](https://tcc.sorrycc.com/p/14dd2af4-2ad7-4aee-9b26-5637cf927a36.png)
+
 #### Options
 
 - `--no-check-git-status`, skip checking if git status is clean.
