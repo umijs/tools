@@ -1,3 +1,13 @@
+## 0.1.22
+
+`2025-01-17`
+
+- feat(release): 集成 [umijs/clack-prompts 和 picocolors，以增强用户交互和日志记录 by @sorrycc](https://github.com/umijs/clack-prompts 和 picocolors for enhanced user interaction and logging by @sorrycc)
+- fix(release): 增强变更日志生成中的日志过滤，以排除 'ci' 和 'test' 条目 by [sorrycc](https://github.com/sorrycc)
+- fix(release): 改进变更日志生成中的日志过滤，以排除 'chore' 和 'docs' 条目 by [sorrycc](https://github.com/sorrycc)
+- release: 0.1.21 by [sorrycc](https://github.com/sorrycc)
+
+
 ## 0.1.21
 
 `2025-01-16`

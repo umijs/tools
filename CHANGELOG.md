@@ -1,3 +1,13 @@
+## 0.1.22
+
+`2025-01-17`
+
+- feat(release): integrate [umijs/clack-prompts and picocolors for enhanced user interaction and logging by @sorrycc](https://github.com/umijs/clack-prompts and picocolors for enhanced user interaction and logging by @sorrycc)
+- fix(release): enhance log filtering in changelog generation to exclude 'ci' and 'test' entries by [sorrycc](https://github.com/sorrycc)
+- fix(release): refine log filtering in changelog generation to exclude 'chore' and 'docs' entries by [sorrycc](https://github.com/sorrycc)
+- release: 0.1.21 by [sorrycc](https://github.com/sorrycc)
+
+
 ## 0.1.21
 
 `2025-01-16`
