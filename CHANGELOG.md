@@ -1,3 +1,10 @@
+## 0.1.24
+
+`2025-01-17`
+
+- fix(release): update log filtering and formatting to enhance user references and exclude specific log types by [@sorrycc](https://github.com/sorrycc)
+
+
 ## 0.1.23
 
 `2025-01-17`
