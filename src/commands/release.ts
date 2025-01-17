@@ -4,6 +4,7 @@ import assert from 'assert';
 import { chat } from "../libs/chat";
 import * as p from '@umijs/clack-prompts';
 import pc from 'picocolors';
+import { execa } from '../libs/execa';
 
 const CANCEL_TEXT = 'Operation cancelled.'
 
@@ -176,8 +177,7 @@ export async function run(argv: ReleaseOptions) {
     const newVersion = getPkg(cwd).version;
     p.log.info(`New version: ${newVersion}`);
 
-    const s = p.spinner();
-    s.start('Publishing...');
+    const t = p.taskLog('Publishing...');
     const tag = (() => {
       if (argv.tag) {
         return argv.tag;
@@ -191,11 +191,16 @@ export async function run(argv: ReleaseOptions) {
         return 'latest';
       }
     })();
-    s.message(`Publishing with tag: ${tag}`);
+    t.text = `Publishing with tag: ${tag}`;
     if (!argv.dryRun) {
-      await $`npm publish --tag ${tag}`;
+      await execa('npm', ['publish', '--tag', tag], {
+        cwd,
+        onData: (data) => {
+          t.text = data;
+        },
+      });
     }
-    s.stop(`Published with tag: ${tag}`);
+    t.success(`Published with tag: ${tag}`);
 
     if (argv.syncDeps) {
       const s = p.spinner();
@@ -316,21 +321,29 @@ export async function run(argv: ReleaseOptions) {
     }
 
     await (async () => {
-      const s = p.spinner();
-      s.start('Pushing to git...');
+      const t = p.taskLog('Pushing to git...');
       if (!argv.dryRun) {
-        await $`git push origin ${branch} --tags`;
+        await execa('git', ['push', 'origin', branch, '--tags'], {
+          cwd,
+          onData: (data) => {
+            t.text = data;
+          },
+        });
       }
-      s.stop('Pushed to git');
+      t.success('Pushed to git');
     })();
 
     if (argv.githubRelease) {
-      const s = p.spinner();
-      s.start(`Creating github release ${newGitTag}...`);
+      const t = p.taskLog(`Creating github release ${newGitTag}...`);
       if (!argv.dryRun) {
-        await $`gh release create ${newGitTag} --title "${newGitTag}" --notes "## What's Changed\n\nhttps://github.com/${repo}/blob/master/CHANGELOG.md#${newVersion.replace(/\./g, '')}\n\n**Full Changelog**: https://github.com/${repo}/compare/${latestTag}...${newGitTag}"`;
+        await execa('gh', ['release', 'create', newGitTag, '--title', newGitTag, '--notes', `## What's Changed\n\nhttps://github.com/${repo}/blob/master/CHANGELOG.md#${newVersion.replace(/\./g, '')}\n\n**Full Changelog**: https://github.com/${repo}/compare/${latestTag}...${newGitTag}`], {
+          cwd,
+          onData: (data) => {
+            t.text = data;
+          },
+        });
       }
-      s.stop(`Created github release ${newGitTag}`);
+      t.success(`Created github release ${newGitTag}`);
     }
 
     p.outro(`Published ${pkg.name}@${newVersion}`);
