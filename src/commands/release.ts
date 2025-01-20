@@ -127,15 +127,25 @@ export async function run(argv: ReleaseOptions) {
     }
 
     if (argv.build !== false && pkg.scripts?.build) {
-      const s = p.spinner();
-      s.start('Building...');
-      await $`npm run build`;
-      s.stop('Build finished');
+      const t = p.taskLog('Building...');
+      t.text = 'Building...';
+      await execa('npm', ['run', 'build'], {
+        cwd,
+        onData: (data) => {
+          t.text = data;
+        },
+      });
+      t.success('Build finished');
       if (pkg.scripts?.doctor) {
-        const s = p.spinner();
-        s.start('Doctoring...');
-        await $`npm run doctor`;
-        s.stop('Doctor finished');
+        const t = p.taskLog('Doctoring...');
+        t.text = 'Doctoring...';
+        await execa('npm', ['run', 'doctor'], {
+          cwd,
+          onData: (data) => {
+            t.text = data;
+          },
+        });
+        t.success('Doctor finished');
       }
     } else {
       const cue = argv.build === false
