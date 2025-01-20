@@ -1,3 +1,10 @@
+## 0.1.32
+
+`2025-01-20`
+
+- fix(release): replace hardcoded npm command with configurable publish client by [@sorrycc](https://github.com/sorrycc)
+
+
 ## 0.1.31
 
 `2025-01-20`
