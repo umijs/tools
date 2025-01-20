@@ -1,3 +1,11 @@
+## 0.1.31
+
+`2025-01-20`
+
+- fix(release): skip changelog generation and tagging for non-latest versions by [@sorrycc](https://github.com/sorrycc)
+- feat(release): add support for '-canary' version identifier in release command by [@sorrycc](https://github.com/sorrycc)
+
+
 ## 0.1.30
 
 `2025-01-20`

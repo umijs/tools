@@ -1,3 +1,11 @@
+## 0.1.31
+
+`2025-01-20`
+
+- fix(release): 跳过非最新版本的变更日志生成和标签 by [@sorrycc](https://github.com/sorrycc)
+- feat(release): 在发布命令中添加对 '-canary' 版本标识符的支持 by [@sorrycc](https://github.com/sorrycc)
+
+
 ## 0.1.30
 
 `2025-01-20`
