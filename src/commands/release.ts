@@ -278,7 +278,9 @@ export async function run(argv: ReleaseOptions) {
       s.stop('Synced publishes');
     }
 
-    if (argv.changelog) {
+    if (tag !== 'latest') {
+      p.log.info(`Skipping changelog since tag is not latest`);
+    } else if (argv.changelog) {
       const s = p.spinner();
       s.start('Generating changelog...');
       const changelog = await generateChangelog(latestTag, newVersion, repo);
@@ -332,7 +334,9 @@ export async function run(argv: ReleaseOptions) {
         }
       }
       s.stop('Committed to git');
-      if (argv.gitTag) {
+      if (tag !== 'latest') {
+        p.log.info(`Skipping tagging since tag is not latest`);
+      } else if (argv.gitTag) {
         const s = p.spinner();
         s.start('Tagging...');
         if (argv.gitTag === 'prefixed') {
