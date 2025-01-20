@@ -10,6 +10,7 @@ const CANCEL_TEXT = 'Operation cancelled.'
 
 interface ReleaseOptions {
   npmClient?: "pnpm" | "npm" | "yarn" | "bun";
+  publishNpmClient?: "npm" | "pnpm" | "tnpm";
   checkGitStatus?: boolean;
   build?: boolean;
   bump?: "patch" | "minor" | "major" | "question" | false;
@@ -241,7 +242,8 @@ export async function run(argv: ReleaseOptions) {
       s.start('Syncing publishes...');
       for (const p of syncPublishesPaths) {
         if (!argv.dryRun) {
-          await $`cd ${p} && npm publish --tag ${tag}`;
+          const publishNpmClient = argv.publishNpmClient || "npm";
+          await $`cd ${p} && ${publishNpmClient} publish --tag ${tag}`;
         }
         s.message(`Published ${p} with tag ${tag}`);
       }

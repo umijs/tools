@@ -15,6 +15,7 @@ Publish a new version of the package.
 - `--no-build`, skip building the package.
 - `--bump=patch|minor|major|question default: patch`, bump the version.
 - `--npm-client=npm|pnpm|yarn|bun default: pnpm`, use the specified npm client.
+- `--publish-npm-client=npm|pnpm|tnpm default: npm`, use the specified npm client to publish.
 - `--tag=latest|next|... default: latest or next if version is pre-release`, publish with the specified tag.
 - `--git-tag=prefixed|v|false default: false`, git tag the release version.
 - `--sync-deps=./templates/*/package.json`, sync the dependencies of the specified package.json. Notice: use `__utool_sync_deps_exact` in target package.json to sync exact version.
