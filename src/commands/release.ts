@@ -215,6 +215,8 @@ export async function run(argv: ReleaseOptions) {
         newVersion.includes('-rc.')
       ) {
         return 'next';
+      } else if (newVersion.includes('-canary')) {
+        return 'canary';
       } else {
         return 'latest';
       }
