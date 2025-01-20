@@ -1,3 +1,10 @@
+## 0.1.28
+
+`2025-01-20`
+
+- fix(release): ensure git status check correctly verifies a clean working directory by [@sorrycc](https://github.com/sorrycc)
+
+
 ## 0.1.27
 
 `2025-01-20`
