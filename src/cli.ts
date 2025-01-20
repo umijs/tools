@@ -5,7 +5,7 @@ import fs from "fs";
 const argv = yParser(process.argv.slice(2));
 const command = argv._[0];
 
-const commandPath = path.join(__dirname, "commands", `${command}.ts`);
+const commandPath = path.join(__dirname, "commands", `${command}.js`);
 if (fs.existsSync(commandPath)) {
   require(commandPath).run(argv).catch((e: any) => {
     console.error(e);

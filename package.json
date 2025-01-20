@@ -25,7 +25,6 @@
     "@umijs/mako": "^0.11.2",
     "git-repo-info": "^2.1.1",
     "picocolors": "^1.1.1",
-    "tsx": "^4.19.2",
     "yargs-parser": "^21.1.1",
     "zx": "^8.3.0"
   },

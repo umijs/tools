@@ -10,4 +10,4 @@
 //     stdio: "inherit",
 // });
 
-require('./dist/cli');
+require('../dist/cli');
