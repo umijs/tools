@@ -223,7 +223,7 @@ export async function run(argv: ReleaseOptions) {
     })();
     t.text = `Publishing with tag: ${tag}`;
     if (!argv.dryRun) {
-      await execa('npm', ['publish', '--tag', tag], {
+      await execa(publishNpmClient, ['publish', '--tag', tag], {
         cwd,
         onData: (data) => {
           t.text = data;
