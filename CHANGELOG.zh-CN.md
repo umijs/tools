@@ -1,3 +1,12 @@
+## 0.1.30
+
+`2025-01-20`
+
+- fix(release): 修复所有权验证中所有者名称的修剪，以提高准确性 by [@sorrycc](https://github.com/sorrycc)
+- fix(release): 改进 checkOwnership 函数中的所有权验证日志 by [@sorrycc](https://github.com/sorrycc)
+- feat(release): 添加 --no-check-ownership 选项以在发布期间跳过所有权验证 by [@sorrycc](https://github.com/sorrycc)
+
+
 ## 0.1.29
 
 `2025-01-20`

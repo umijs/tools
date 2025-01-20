@@ -1,3 +1,12 @@
+## 0.1.30
+
+`2025-01-20`
+
+- fix(release): trim owner names in ownership verification for improved accuracy by [@sorrycc](https://github.com/sorrycc)
+- fix(release): improve ownership verification logging in checkOwnership function by [@sorrycc](https://github.com/sorrycc)
+- feat(release): add --no-check-ownership option to skip ownership verification during release by [@sorrycc](https://github.com/sorrycc)
+
+
 ## 0.1.29
 
 `2025-01-20`
