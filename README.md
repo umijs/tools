@@ -24,6 +24,7 @@ Publish a new version of the package.
 - `--dry-run`, dry run the command.
 - `--github-release`, publish the release to github.
 - `--changelog`, generate changelog.
+- `--no-check-ownership`, skip checking if you are the owner of the package.
 
 ### bundle
 

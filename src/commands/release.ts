@@ -22,6 +22,7 @@ interface ReleaseOptions {
   dryRun?: boolean;
   githubRelease?: boolean;
   changelog?: boolean;
+  checkOwnership?: boolean;
 }
 
 export async function run(argv: ReleaseOptions) {
@@ -116,6 +117,17 @@ export async function run(argv: ReleaseOptions) {
         throw new Error('git status is not clean');
       }
       s.stop('Git status is clean');
+    }
+
+    if (argv.checkOwnership !== false) {
+      const s = p.spinner();
+      s.start('Checking ownership...');
+      const isOwner = await checkOwnership(pkg.name, publishNpmClient);
+      if (!isOwner) {
+        s.stop('You are not the owner of the package');
+        throw new Error('You are not the owner of the package');
+      }
+      s.stop('Checked ownership');
     }
 
     // check package access
@@ -416,4 +428,14 @@ export function filterLogs(logs: string[], repo: string) {
 async function translate(changelog: string) {
   const result = await chat(`Translate the following text to Chinese and keep the by [author](url) and in [#number](url) in the latest if exists and keep the original format:\n\n ${changelog}`);
   return result;
+}
+
+async function checkOwnership(pkgName: string, publishNpmClient: string) {
+  const pkgs = [pkgName];
+  const isOwners = await Promise.all(pkgs.map(async pkg => {
+    const whoami = (await $`${publishNpmClient} whoami`).stdout.trim();
+    const owners = (await $`${publishNpmClient} owner ls ${pkg}`).stdout.trim().split('\n');
+    return owners.includes(whoami);
+  }));
+  return isOwners.every(isOwner => isOwner);
 }
