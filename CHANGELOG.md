@@ -1,3 +1,10 @@
+## 0.1.25
+
+`2025-01-20`
+
+- feat(release): add support for custom npm client during publish in README and release command by [@sorrycc](https://github.com/sorrycc)
+
+
 ## 0.1.24
 
 `2025-01-17`

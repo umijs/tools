@@ -1,3 +1,10 @@
+## 0.1.25
+
+`2025-01-20`
+
+- feat(release): 在 README 和 release 命令中添加发布时对自定义 npm 客户端的支持 by [@sorrycc](https://github.com/sorrycc)
+
+
 ## 0.1.24
 
 `2025-01-17`
