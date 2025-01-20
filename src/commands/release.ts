@@ -109,7 +109,10 @@ export async function run(argv: ReleaseOptions) {
       const s = p.spinner();
       s.start('Checking if git status is clean...');
       const isGitClean = (await $`git status --porcelain`).stdout.trim().length;
-      assert(!isGitClean, 'git status is not clean');
+      if (!isGitClean) {
+        s.stop('Git status is not clean');
+        throw new Error('git status is not clean');
+      }
       s.stop('Git status is clean');
     }
 
