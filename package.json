@@ -2,11 +2,17 @@
   "name": "@umijs/tools",
   "version": "0.1.25",
   "scripts": {
+    "build": "father build",
+    "doctor": "father doctor",
     "release": "./bin/utools.js release --git-tag --github-release --changelog",
     "test": "vitest"
   },
   "authors": [
     "chencheng <sorrycc@gmail.com> (https://github.com/sorrycc)"
+  ],
+  "files": [
+    "dist",
+    "bin"
   ],
   "bin": {
     "utools": "./bin/utools.js"
@@ -25,6 +31,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.10.5",
+    "father": "^4.5.1",
     "vitest": "^1.4.0"
   },
   "publishConfig": {
