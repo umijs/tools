@@ -435,7 +435,16 @@ async function checkOwnership(pkgName: string, publishNpmClient: string) {
   const isOwners = await Promise.all(pkgs.map(async pkg => {
     const whoami = (await $`${publishNpmClient} whoami`).stdout.trim();
     const owners = (await $`${publishNpmClient} owner ls ${pkg}`).stdout.trim().split('\n');
-    return owners.includes(whoami);
+    const isOwner = owners.includes(whoami);
+    if (!isOwner) {
+      console.log('owner check failed since:');
+      console.log('whoami', whoami);
+      console.log('owners', owners);
+      console.log('pkg', pkg);
+      console.log('publishNpmClient', publishNpmClient);
+      console.log('isOwner', isOwner);
+    }
+    return isOwner;
   }));
   return isOwners.every(isOwner => isOwner);
 }
