@@ -1,3 +1,11 @@
+## 0.1.27
+
+`2025-01-20`
+
+- feat(release): enhance release command to support custom npm client configuration by [@sorrycc](https://github.com/sorrycc)
+- fix(release): improve error handling for git status check in release command by [@sorrycc](https://github.com/sorrycc)
+
+
 ## 0.1.26
 
 `2025-01-20`

@@ -1,3 +1,11 @@
+## 0.1.27
+
+`2025-01-20`
+
+- feat(release): 增强发布命令以支持自定义 npm 客户端配置 by [@sorrycc](https://github.com/sorrycc)
+- fix(release): 改进发布命令中 git 状态检查的错误处理 by [@sorrycc](https://github.com/sorrycc)
+
+
 ## 0.1.26
 
 `2025-01-20`
