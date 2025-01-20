@@ -1,3 +1,10 @@
+## 0.1.29
+
+`2025-01-20`
+
+- refactor(release): replace spinner with taskLog for build and doctor commands, enhancing output handling by [@sorrycc](https://github.com/sorrycc)
+
+
 ## 0.1.28
 
 `2025-01-20`

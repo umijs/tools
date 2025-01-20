@@ -1,3 +1,10 @@
+## 0.1.29
+
+`2025-01-20`
+
+- refactor(release): 将构建和 doctor 命令的 spinner 替换为 taskLog，增强输出处理能力 by [@sorrycc](https://github.com/sorrycc)
+
+
 ## 0.1.28
 
 `2025-01-20`
