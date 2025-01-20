@@ -1,3 +1,10 @@
+## 0.1.26
+
+`2025-01-20`
+
+- refactor: migrate to ES modules and update import paths for consistency by [@sorrycc](https://github.com/sorrycc)
+
+
 ## 0.1.25
 
 `2025-01-20`

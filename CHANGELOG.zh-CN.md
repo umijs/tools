@@ -1,3 +1,10 @@
+## 0.1.26
+
+`2025-01-20`
+
+- refactor: 迁移到 ES 模块并更新导入路径以保持一致性 by [@sorrycc](https://github.com/sorrycc)
+
+
 ## 0.1.25
 
 `2025-01-20`
