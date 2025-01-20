@@ -39,6 +39,7 @@ export async function run(argv: ReleaseOptions) {
     const latestTag = (await $`git describe --tags --abbrev=0`).stdout.trim();
     const repo = await getGithubRepo();
     assert(repo, 'repo is not found');
+    const publishNpmClient = argv.publishNpmClient || "npm";
 
     const infos = [
       `cwd: ${cwd}`,
@@ -47,6 +48,7 @@ export async function run(argv: ReleaseOptions) {
       `branch: ${branch}`,
       `latestTag: ${latestTag}`,
       `github repo: ${repo}`,
+      `publishNpmClient: ${publishNpmClient}`,
     ];
     p.box(infos.join('\n'), 'Release Info');
 
@@ -120,7 +122,7 @@ export async function run(argv: ReleaseOptions) {
     p.log.step('Checking package access...');
     const pkgAccess = pkg.publishConfig?.access;
     const isScoped = pkg.name.startsWith('@');
-    if (isScoped) {
+    if (isScoped && publishNpmClient === 'npm') {
       assert(pkgAccess === 'public', 'package access is not public');
     }
 
@@ -245,7 +247,6 @@ export async function run(argv: ReleaseOptions) {
       s.start('Syncing publishes...');
       for (const p of syncPublishesPaths) {
         if (!argv.dryRun) {
-          const publishNpmClient = argv.publishNpmClient || "npm";
           await $`cd ${p} && ${publishNpmClient} publish --tag ${tag}`;
         }
         s.message(`Published ${p} with tag ${tag}`);
