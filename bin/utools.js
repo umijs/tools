@@ -10,4 +10,4 @@
 //     stdio: "inherit",
 // });
 
-require('../dist/cli');
+import('../dist/cli.js');

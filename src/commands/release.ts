@@ -1,10 +1,10 @@
 import "zx/globals";
 import getGitRepoInfo from 'git-repo-info';
 import assert from 'assert';
-import { chat } from "../libs/chat";
+import { chat } from "../libs/chat.js";
 import * as p from '@umijs/clack-prompts';
 import pc from 'picocolors';
-import { execa } from '../libs/execa';
+import { execa } from '../libs/execa.js';
 
 const CANCEL_TEXT = 'Operation cancelled.'
 

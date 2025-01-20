@@ -1,6 +1,7 @@
 {
   "name": "@umijs/tools",
   "version": "0.1.25",
+  "type": "module",
   "scripts": {
     "build": "father build",
     "doctor": "father doctor",

@@ -1,5 +1,5 @@
 import { test, expect } from 'vitest';
-import { filterLogs } from './release';
+import { filterLogs } from './release.js';
 
 test('filterLogs', () => {
   // Test filtering release commits
