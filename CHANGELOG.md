@@ -1,3 +1,10 @@
+## 0.1.33
+
+`2025-02-22`
+
+- fix(release): handle repositories without existing git tags by [@sorrycc](https://github.com/sorrycc)
+
+
 ## 0.1.32
 
 `2025-01-20`
