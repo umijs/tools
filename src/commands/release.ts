@@ -37,7 +37,12 @@ export async function run(argv: ReleaseOptions) {
       || fs.existsSync(path.join(cwd, "../pnpm-workspace.yaml"))
       || fs.existsSync(path.join(cwd, "../../pnpm-workspace.yaml"));
     const { branch } = getGitRepoInfo();
-    const latestTag = (await $`git describe --tags --abbrev=0`).stdout.trim();
+    let latestTag = '';
+    try {
+      latestTag = (await $`git describe --tags --abbrev=0`).stdout.trim();
+    } catch (e) {
+      latestTag = (await $`git rev-list --max-parents=0 HEAD`).stdout.trim().slice(0, 7);
+    }
     const repo = await getGithubRepo();
     assert(repo, 'repo is not found');
     const publishNpmClient = argv.publishNpmClient || "npm";
