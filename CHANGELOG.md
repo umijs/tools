@@ -1,3 +1,10 @@
+## 0.1.34
+
+`2025-02-28`
+
+- feat(release): add support for custom changelog directory by [@sorrycc](https://github.com/sorrycc)
+
+
 ## 0.1.33
 
 `2025-02-22`

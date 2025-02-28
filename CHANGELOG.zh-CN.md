@@ -1,3 +1,10 @@
+## 0.1.34
+
+`2025-02-28`
+
+- feat(release): 添加对自定义 changelog 目录的支持 by [@sorrycc](https://github.com/sorrycc)
+
+
 ## 0.1.33
 
 `2025-02-22`
