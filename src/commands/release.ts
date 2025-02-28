@@ -22,6 +22,7 @@ interface ReleaseOptions {
   dryRun?: boolean;
   githubRelease?: boolean;
   changelog?: boolean;
+  changelogDir?: string;
   checkOwnership?: boolean;
 }
 
@@ -289,13 +290,14 @@ export async function run(argv: ReleaseOptions) {
       const s = p.spinner();
       s.start('Generating changelog...');
       const changelog = await generateChangelog(latestTag, newVersion, repo);
-      const changelogPath = path.join(cwd, 'CHANGELOG.md');
+      const changelogDir = argv.changelogDir ? path.join(cwd, argv.changelogDir) : cwd;
+      const changelogPath = path.join(changelogDir, 'CHANGELOG.md');
       const originalChangelog = fs.existsSync(changelogPath) ? fs.readFileSync(changelogPath, 'utf8') : '';
       const newChangelog = [changelog, originalChangelog].join('\n\n');
       fs.writeFileSync(changelogPath, newChangelog);
       s.stop(`Generated changelog to ${changelogPath}`);
 
-      const zhCNChangelogPath = path.join(cwd, 'CHANGELOG.zh-CN.md');
+      const zhCNChangelogPath = path.join(changelogDir, 'CHANGELOG.zh-CN.md');
       // TODO: translate changelog to zh-CN
       if (fs.existsSync(zhCNChangelogPath)) {
         if (!process.env.GEMINI_API_KEY) {
