@@ -1,23 +1,16 @@
 {
   "compilerOptions": {
+    "target": "ES2020",
+    "module": "CommonJS",
+    "moduleResolution": "node",
+    "declaration": true,
+    "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "target": "es2022",
-    "allowJs": true,
-    "resolveJsonModule": true,
-    "moduleDetection": "force",
-    "isolatedModules": true,
-    "verbatimModuleSyntax": true,
-    "strict": true,
-    "noUncheckedIndexedAccess": true,
-    "noImplicitOverride": true,
-    "lib": ["es2022"],
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "declaration": true,
-    "module": "esnext",
-    "moduleResolution": "node"
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "dist",
+    "rootDir": "src"
   },
   "include": ["src"],
-  "exclude": ["src/**/fixtures/**"]
+  "exclude": ["node_modules", "dist"]
 }

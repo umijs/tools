@@ -3,10 +3,12 @@
   "version": "0.1.34",
   "type": "module",
   "scripts": {
-    "build": "father build",
-    "doctor": "father doctor",
+    "dev": "tsx ./src/cli.ts",
+    "format": "prettier --write .",
+    "build": "bun build src/cli.ts --external @umijs/mako --minify --outfile dist/cli.mjs --target=node",
     "release": "./bin/utools.js release --git-tag --github-release --changelog",
-    "test": "vitest"
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "authors": [
     "chencheng <sorrycc@gmail.com> (https://github.com/sorrycc)"
@@ -20,19 +22,22 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@google/generative-ai": "^0.21.0",
-    "@types/yargs-parser": "^21.0.3",
-    "@umijs/clack-prompts": "^0.0.4",
-    "@umijs/mako": "^0.11.2",
-    "git-repo-info": "^2.1.1",
-    "picocolors": "^1.1.1",
-    "yargs-parser": "^21.1.1",
-    "zx": "^8.3.0"
+    "@umijs/mako": "^0.11.2"
   },
   "devDependencies": {
+    "@google/generative-ai": "^0.21.0",
+    "@trivago/prettier-plugin-sort-imports": "^5.2.2",
     "@types/node": "^22.10.5",
-    "father": "^4.5.1",
-    "vitest": "^1.4.0"
+    "@types/yargs-parser": "^21.0.3",
+    "@umijs/clack-prompts": "^0.0.4",
+    "git-repo-info": "^2.1.1",
+    "picocolors": "^1.1.1",
+    "prettier": "^3.5.3",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2",
+    "vitest": "^1.4.0",
+    "yargs-parser": "^21.1.1",
+    "zx": "^8.3.0"
   },
   "publishConfig": {
     "access": "public"
