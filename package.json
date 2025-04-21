@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "tsx ./src/cli.ts",
     "format": "prettier --write .",
-    "build": "bun build src/cli.ts --external @umijs/mako --minify --outfile dist/cli.mjs --target=node",
+    "build": "bun build src/cli.ts --external @umijs/mako --external zx --minify --outfile dist/cli.mjs --target=node",
     "release": "./bin/utools.js release --git-tag --github-release --changelog",
     "test": "vitest run",
     "test:watch": "vitest"
@@ -22,7 +22,8 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@umijs/mako": "^0.11.2"
+    "@umijs/mako": "^0.11.2",
+    "zx": "^8.3.0"
   },
   "devDependencies": {
     "@google/generative-ai": "^0.21.0",
@@ -36,8 +37,7 @@
     "tsx": "^4.19.3",
     "typescript": "^5.8.2",
     "vitest": "^1.4.0",
-    "yargs-parser": "^21.1.1",
-    "zx": "^8.3.0"
+    "yargs-parser": "^21.1.1"
   },
   "publishConfig": {
     "access": "public"
