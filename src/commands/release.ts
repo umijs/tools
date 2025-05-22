@@ -26,6 +26,11 @@ interface ReleaseOptions {
   checkOwnership?: boolean;
 }
 
+interface CommitGhLog {
+  author: string;
+  message: string;
+}
+
 export async function run(argv: ReleaseOptions) {
   p.intro('Release');
     try {
@@ -399,18 +404,73 @@ function getPkg(cwd: string) {
   return pkg;
 }
 
+async function getRepoInfo() {
+  const repoUrl = (await $`git config --get remote.origin.url`).stdout.trim();
+  const isGithub = repoUrl.includes('github.com');
+
+  return {
+    repo: repoUrl.match(/:(.*)\.git/)?.[1],
+    isGithub,
+  };
+}
+
 async function getGithubRepo() {
-  const repo = (await $`git config --get remote.origin.url`).stdout.trim();
   // e.g. extract umijs/tnf from git@github.com:umijs/tnf.git
-  return repo.match(/:(.*)\.git/)?.[1];
+  const { repo } = await getRepoInfo();
+  return repo;
+}
+
+async function isGithubRepo() {
+  const { isGithub } = await getRepoInfo();
+  return isGithub;
 }
 
 export async function generateChangelog(latestTag: string, newVersion: string, repo: string) {
   const latestTagTime = (await $`git show -s --format=%ci ${latestTag}`).stdout.trim();
-  let logs = (await $`git log --pretty=format:"- %s by @%an" --since "${latestTagTime}"`).stdout.trim().split('\n');
-  logs = filterLogs(logs, repo);
+  let logs = [];
+  if (await isGithubRepo()) {
+    try {
+      await $`gh --version`;
+      const isoDate = new Date(latestTagTime).toISOString();
+      const messages = (
+        await $`gh api repos/${repo}/commits?since=${isoDate} -q '.[] | {message: (.commit.message | split("\n")[0]), author: .author.login}'`
+      ).stdout
+        .trim()
+        .split('\n')
+        .map((l) => JSON.parse(l));
+      logs = filterGhLogs(messages, repo);
+    } catch (e) {
+      throw new Error(`gh is not installed, please install it first. It's required for github release.`);
+    }
+  } else {
+    const messages = (await $`git log --pretty=format:"- %s by @%an" --since "${latestTagTime}"`).stdout
+      .trim()
+      .split('\n');
+    logs = filterLogs(messages, repo);
+  }
   const header = `## ${newVersion}\n\n\`${new Date().toISOString().split('T')[0]}\`\n`;
   return [header, ...logs].join('\n').trim() + '\n';
+}
+
+export function filterGhLogs(logs: CommitGhLog[], repo: string): string[] {
+  logs = logs.filter((l) => !l.message.startsWith('release:'));
+  logs = logs.filter((l) => !l.message.startsWith('chore:') && !l.message.startsWith('chore('));
+  logs = logs.filter((l) => !l.message.startsWith('docs:') && !l.message.startsWith('docs('));
+  logs = logs.filter((l) => !l.message.startsWith('ci:') && !l.message.startsWith('ci('));
+  logs = logs.filter((l) => !l.message.startsWith('test:') && !l.message.startsWith('test('));
+
+  return logs.map((l) => {
+    const issues: string[] = [];
+    let msg = l.message.replace(/\(#(\d+)\)/g, (_, p1) => {
+      issues.push(p1);
+      return '';
+    });
+    msg = `- ${msg} by [@${l.author}](https://github.com/${l.author})`;
+    if (issues.length) {
+      msg += ` in ${issues.map((i) => `[#${i}](https://github.com/${repo}/pull/${i})`).join(' ')}`;
+    }
+    return msg.replace(/\s+/g, ' ');
+  });
 }
 
 export function filterLogs(logs: string[], repo: string) {
