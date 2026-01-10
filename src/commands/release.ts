@@ -231,6 +231,7 @@ export async function run(argv: ReleaseOptions) {
     if (!argv.dryRun) {
       await execa(publishNpmClient, ['publish', '--tag', tag], {
         cwd,
+        stdin: 'inherit',
         onData: (data) => {
           t.text = data;
         },
@@ -277,7 +278,7 @@ export async function run(argv: ReleaseOptions) {
       s.start('Syncing publishes...');
       for (const p of syncPublishesPaths) {
         if (!argv.dryRun) {
-          await $`cd ${p} && ${publishNpmClient} publish --tag ${tag}`;
+          await $({ stdio: ['inherit', 'pipe', 'pipe'] })`cd ${p} && ${publishNpmClient} publish --tag ${tag}`;
         }
         s.message(`Published ${p} with tag ${tag}`);
       }
